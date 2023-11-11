@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  date: 2023-11-11 16:31:54
+  nom: MyString
+  maladie: MyString
+
+two:
+  date: 2023-11-11 16:31:54
+  nom: MyString
+  maladie: MyString
