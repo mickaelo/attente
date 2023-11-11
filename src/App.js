@@ -1,24 +1,24 @@
-import logo from './logo.svg';
 import './App.css';
+import QueueManager from './Attente';
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import Patient from './Patient';
+import PatientList from './ListPatient';
+import Topbar from './TopBar';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <div>
+        <Topbar />
+        <Routes>
+          <Route path="/file-attente" element={<QueueManager />} />
+          <Route path="/patient" element={<Patient />} />
+          <Route path="/liste-patients" element={<PatientList />} />
+        </Routes>
+      </div>
+    </Router>
+
   );
 }
 
