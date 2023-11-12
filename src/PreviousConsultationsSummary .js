@@ -4,26 +4,8 @@ import axios from 'axios';
 
 const { Text } = Typography;
 
-const PreviousConsultationsSummary = ({ previousConsultations }) => {
-    const [consultations, setConsultations] = useState([]);
-    const getConsultations = () => {
-        console.log("get")
-        axios.get(`http://localhost:3002/consultations`)
-            .then(res => {
-                console.log(res)
-                const sorted = res.data.sort(function (a, b) {
-                    // Turn your strings into dates, and then subtract them
-                    // to get a value that is either negative, positive, or zero.
-                    return new Date(a?.date) - new Date(b?.date);
-                })
-                setConsultations(sorted)
-            })
-    }
-
-    useEffect(() => {
-        console.log("test")
-        getConsultations()
-    }, [])
+const PreviousConsultationsSummary = ({ consultations }) => {
+   
 
 
 

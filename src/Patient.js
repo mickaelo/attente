@@ -28,9 +28,26 @@ const { TabPane } = Tabs;
 const EditPatientDetailPage = (parms) => {
   let { id } = useParams();
   console.log(id)
+  const [consultations, setConsultations] = useState([]);
+  const getConsultations = () => {
+      console.log("get")
+      axios.get(`http://localhost:3002/consultations`)
+          .then(res => {
+              console.log(res)
+              const sorted = res.data.sort(function (a, b) {
+                  // Turn your strings into dates, and then subtract them
+                  // to get a value that is either negative, positive, or zero.
+                  return new Date(a?.date) - new Date(b?.date);
+              })
+              setConsultations(sorted)
+          })
+  }
 
+  useEffect(() => {
+      console.log("test")
+      getConsultations()
+  }, [])
 
-  const [consultations, setConsultations] = useState(generateRandomConsultations(50))
   const [patient, setPatient] = useState({
     id: 1,
     firstName: 'John Doe',
@@ -144,6 +161,8 @@ console.log(patient)
     };
     setConsultations([...consultations, newConsultation])
     axios.post(`http://localhost:3002/consultations`, newConsultation)
+    .then(() => getConsultations())
+   
     // Vous pouvez ensuite stocker cette nouvelle consultation dans votre base de données ou votre état local
     console.log('Nouvelle consultation:', newConsultation);
     // if (type === "courrier") {
@@ -294,7 +313,7 @@ console.log(patient)
             <Title level={2} style={{ color: '#1890ff' }}>
               Suivi de {patient.firstName} {patient.lastName}
             </Title>
-            <PreviousConsultationsSummary previousConsultations={consultations} />
+            <PreviousConsultationsSummary consultations={consultations} previousConsultations={consultations} />
             <Tabs defaultActiveKey="1">
               <TabPane tab="Informations générales" key="1">
                 <Form layout="vertical" form={formPatient}>

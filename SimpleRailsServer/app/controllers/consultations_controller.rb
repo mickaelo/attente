@@ -41,7 +41,7 @@ class ConsultationsController < ApplicationController
     end
   
     def consultation_params
-      params.require(:consultation).permit(:prescription, :antecedents, :allergies, :name, :status, :diagnosis, :date, :presence, :measurements, :exams, :description, :user_id)
+      params.require(:consultation).permit(:prescription, :antecedents, :allergies, :name, :status, :diagnosis, :date, :presence, :measurements, :description, :user_id, :exams => [:conclusion, :motif, :external => [:od, :og], :fo => [:od, :og], :laf => [:od, :og]])
     end
   end
   
