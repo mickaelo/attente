@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, Space, Button, Modal, Form, Input, DatePicker, Select } from 'antd';
 import EditPatientForm from './EditPatientForm'; // Assure-toi d'importer correctement le composant d'édition
 import moment from 'moment';
 import AppointmentCalendar from './Calendar';
 import AddPatientForm from './AddPatient';
-
+import axios from 'axios';
 const { confirm } = Modal;
 const { Option } = Select;
 
@@ -72,7 +72,16 @@ const PatientList = ({ onDeletePatient }) => {
   const [searchForm] = Form.useForm();
   const [filteredPatients, setFilteredPatients] = useState(null);
   const patients = generateRandomPatients();
+  useEffect(() => {
+    getPatients()
+  }, [])
 
+  const getPatients = () => {
+    axios.get(`http://localhost:3002/users`)
+      .then(res => {
+        setFilteredPatients(res.data)
+      })
+  }
   const columns = [
     {
       title: 'Prénom',
@@ -281,7 +290,7 @@ const PatientList = ({ onDeletePatient }) => {
           </Button>,
         ]}
       >
-        <AddPatientForm />
+        <AddPatientForm getPatients={getPatients} />
       </Modal>
     </div>
   );

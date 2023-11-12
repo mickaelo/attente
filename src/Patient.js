@@ -1,6 +1,6 @@
 // EditPatientDetailPage.js
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Select, Button, message, Typography, Divider, Row, Col, Tabs, AutoComplete } from 'antd';
+import { Form, Input, Select, Button, message, Typography, Divider, Row, Col, Tabs, AutoComplete, Modal } from 'antd';
 import backgroundImg from './background.jpeg'; // Remplace avec le chemin de ton image de fond
 import { useReactToPrint } from 'react-to-print';
 import { saveAs } from 'file-saver';
@@ -12,6 +12,8 @@ import PreviousConsultationsSummary from './PreviousConsultationsSummary ';
 import moment from 'moment';
 import EditableTable from './Tableau';
 import MedicationSelect from './MedicationSelect';
+import Ordonnances from './Ordonnances';
+import Courriers from './Courriers';
 
 
 const autoCompleteOptions = ['oeil blanc, cornée claire, chambre antérieure corne et formée, cristallin clair'];
@@ -24,9 +26,54 @@ const { TabPane } = Tabs;
 
 const EditPatientDetailPage = () => {
   const [medications, setMedications] = useState([])
-  console.log(medications)
   const [selectedMedications, setSelectedMedications] = useState([]);
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [letters, setLetters] = useState([]);
+  const [prescriptionModalVisible, setPrescriptionModalVisible] = useState(false);
+  const [letterModalVisible, setLetterModalVisible] = useState(false);
 
+  const [form] = Form.useForm();
+
+  const showPrescriptionModal = () => {
+    setPrescriptionModalVisible(true);
+  };
+
+  const handlePrescriptionModalOk = () => {
+    form.validateFields().then((values) => {
+      const newPrescription = {
+        medication: values.medication,
+        dosage: values.dosage,
+        duration: values.duration,
+      };
+      setPrescriptions((prevPrescriptions) => [...prevPrescriptions, newPrescription]);
+      setPrescriptionModalVisible(false);
+      form.resetFields();
+    });
+  };
+
+  const handlePrescriptionModalCancel = () => {
+    setPrescriptionModalVisible(false);
+  };
+
+  const showLetterModal = () => {
+    setLetterModalVisible(true);
+  };
+
+  const handleLetterModalOk = () => {
+    form.validateFields().then((values) => {
+      const newLetter = {
+        subject: values.subject,
+        content: values.content,
+      };
+      setLetters((prevLetters) => [...prevLetters, newLetter]);
+      setLetterModalVisible(false);
+      form.resetFields();
+    });
+  };
+
+  const handleLetterModalCancel = () => {
+    setLetterModalVisible(false);
+  };
   const handleSelectMedication = (selectedValues) => {
     setSelectedMedications(selectedValues);
 
@@ -36,7 +83,7 @@ const EditPatientDetailPage = () => {
       const medication = medications.find((m) => m.id === medicationId); // Implémentez cette fonction
 
       // Retournez le nom et la posologie du médicament
-      return `${medication.name} - ${medication.posology}`;
+      return `${medication.name}${medication.posology ? " - " + medication.posology : ""}`;
     });
 
     // Mettez à jour le champ d'ordonnance
@@ -52,7 +99,7 @@ const EditPatientDetailPage = () => {
 
     const updatedMedicationsInfo = updatedMedications.map((medicationId) => {
       const medication = medications.find((m) => m.id === medicationId); // Implémentez cette fonction
-      return `${medication.name} - ${medication.posology}`;
+      return `${medication.name}${medication.posology ? " - " + medication.posology : ""}`;
     });
 
     handleMeasurementChange('description', 'prescription', updatedMedicationsInfo.join('\n'))
@@ -87,10 +134,11 @@ const EditPatientDetailPage = () => {
       laf: { od: '', og: '' },
       fo: { od: '', og: '' },
       external: { od: '', og: '' },
-      conclusion: ''
+      conclusion: '',
+      motif: ""
     },
     description: {
-      prescription: '1 monture + verres',
+      prescription: '',
       courrier: "Au total, l'examen de ce jour ne retrouve pas d'anomalie. Le prochain contrôle sera dans un an sauf problème."
     },
     rating: '',
@@ -100,7 +148,43 @@ const EditPatientDetailPage = () => {
   const [formMeasurements] = Form.useForm();
   const [formPrescription] = Form.useForm();
   const [formExams] = Form.useForm();
-  console.log(consultations)
+
+  const generateCourrier = async (e) => {
+    const examsValues = formExams.getFieldsValue();
+    const newConsultation = {
+      ...examsValues,
+      ...patient,
+      date: moment(),
+    };
+    await axios.post(`http://localhost:3001/generate-courrier`, {
+      ...newConsultation,
+      description: {
+        courrier: e
+      }
+    }, {
+      responseType: 'blob'
+    }).then(res => {
+      saveAs(res.data, `courrier.pdf`);
+    })
+  }
+  const generatePrescription = async (e) => {
+    const examsValues = formExams.getFieldsValue();
+    const newConsultation = {
+      ...examsValues,
+      ...patient,
+      date: moment(),
+    };
+    await axios.post(`http://localhost:3001/generate-prescription`, {
+      ...newConsultation,
+      description: {
+        prescription: e
+      }
+    }, {
+      responseType: 'blob'
+    }).then(res => {
+      saveAs(res.data, `ordonnance.pdf`);
+    })
+  }
   const handleSave = (type) => {
     // Récupérer les valeurs de tous les formulaires
     const patientValues = formPatient.getFieldsValue();
@@ -111,10 +195,6 @@ const EditPatientDetailPage = () => {
     const newConsultation = {
       ...examsValues,
       ...patient,
-      description: {
-        ...patient.description,
-        prescription: '1 monture + verres\n\n' + patient.description.prescription,
-      },
       date: moment(),
       // measurements: {
       //   refraction: measurementsValues.refraction,
@@ -132,22 +212,28 @@ const EditPatientDetailPage = () => {
     axios.post(`http://localhost:3002/consultations`, { consultation: newConsultation })
     // Vous pouvez ensuite stocker cette nouvelle consultation dans votre base de données ou votre état local
     console.log('Nouvelle consultation:', newConsultation);
-    if (type === "courrier") {
-      axios.post(`http://localhost:3001/generate-courrier`, newConsultation, {
-        responseType: 'blob'
-      })
-        .then(res => {
-          saveAs(res.data, 'report.pdf');
-        })
-    }
-    else {
-      axios.post(`http://localhost:3001/generate-prescription`, newConsultation, {
-        responseType: 'blob'
-      })
-        .then(res => {
-          saveAs(res.data, 'report.pdf');
-        })
-    }
+    // if (type === "courrier") {
+    //   axios.post(`http://localhost:3001/generate-courrier`, newConsultation, {
+    //     responseType: 'blob'
+    //   })
+    //     .then(res => {
+    //       saveAs(res.data, 'report.pdf');
+    //     })
+    // }
+    // else {
+    //   newConsultation.description?.prescription?.map((p, i) => axios.post(`http://localhost:3001/generate-prescription`, {
+    //     ...newConsultation,
+    //     description: {
+    //       prescription: p
+    //     }
+    //   }, {
+    //     responseType: 'blob'
+    //   })
+    //     .then(res => {
+    //       saveAs(res.data, `report${i}.pdf`);
+    //     }))
+
+    // }
   };
   const handleInputChange = (name, value) => {
     setPatient((prevPatient) => ({
@@ -310,370 +396,80 @@ const EditPatientDetailPage = () => {
               </TabPane>
               <TabPane tab="Mesures" key="2">
                 <EditableTable setMeasurements={(data) => setPatient({ ...patient, measurements: data })} />
-                {/* <Form layout="vertical" form={formMeasurements}>
-                  <Row>
-                    <Col span={6}>
-                      <Divider orientation="left">Autoréfractomètre</Divider>
-                      <Row>OD
-                        <Col span={4}> <Form.Item label="" >
-                          <AutoComplete filterOption={filterOptions}
-
-                            onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'od1', value)}
-                            value={patient.measurements.refraction.od1}
-                          />
-                        </Form.Item>
-                        </Col>
-                        <Col span={4}> <Form.Item label="" >
-                          <AutoComplete filterOption={filterOptions}
-                            onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'od2', value)}
-                            value={patient.measurements.refraction.od2}
-                          />
-                        </Form.Item></Col>
-                        <Col span={4}> <Form.Item label="">
-                          <AutoComplete filterOption={filterOptions}
-                            onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'od3', value)}
-                            value={patient.measurements.refraction.od3}
-                          />
-                        </Form.Item></Col>
-
-                      </Row>
-                      <Row>OG
-                        <Col span={4}> <Form.Item label="" >
-                          <AutoComplete filterOption={filterOptions}
-
-                            onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'og1', value)}
-                            value={patient.measurements.refraction.og1}
-                          />
-                        </Form.Item>
-                        </Col>
-                        <Col span={4}> <Form.Item label="" >
-                          <AutoComplete filterOption={filterOptions}
-                            onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'og2', value)}
-                            value={patient.measurements.refraction.og2}
-                          />
-                        </Form.Item></Col>
-                        <Col span={4}> <Form.Item label="">
-                          <AutoComplete filterOption={filterOptions}
-                            onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'og3', value)}
-                            value={patient.measurements.refraction.og3}
-                          />
-                        </Form.Item></Col>
-
-                      </Row>
-                    </Col>
-                    <Col span={6}>
-                      <Row>
-                        <Divider orientation="left"></Divider>
-                        <Col span={4}>
-
-                        </Col>
-                      </Row>
-                    </Col>
-                    <Col span={6}>
-                      <Row>
-                        <Divider orientation="left">Acuité de loin</Divider>
-                        <Col span={4}>
-                          <Form.Item label="">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'acuitySc', 'od', value)}
-                              value={patient.measurements.acuitySc.od}
-                            />
-                          </Form.Item>
-                          <Form.Item label="">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'acuitySc', 'od', value)}
-                              value={patient.measurements.acuitySc.od}
-                            />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                    </Col>
-                    <Col span={6}>
-                      <Row>
-                        <Divider orientation="left">Acuité de près</Divider>
-                        <Col span={4}>
-                          <Form.Item label="">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'acuitySc', 'od', value)}
-                              value={patient.measurements.acuitySc.od}
-                            />
-                          </Form.Item>
-                          <Form.Item label="">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'acuitySc', 'od', value)}
-                              value={patient.measurements.acuitySc.od}
-                            />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col span={6}>
-                      <Divider orientation="left">Réfraction subjective</Divider>
-                      <Row>
-                        OD
-                        <Col span={4}> <Form.Item label="">
-                          <AutoComplete filterOption={filterOptions}
-                            onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'od1', value)}
-                            value={patient.measurements.refraction.od1}
-                          />
-                        </Form.Item></Col>
-                        <Col span={4}> <Form.Item label="">
-                          <AutoComplete filterOption={filterOptions}
-                            onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'od2', value)}
-                            value={patient.measurements.refraction.od2}
-                          />
-                        </Form.Item></Col>
-                        <Col span={4}> <Form.Item label="">
-                          <AutoComplete filterOption={filterOptions}
-                            onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'od3', value)}
-                            value={patient.measurements.refraction.od3}
-                          />
-                        </Form.Item></Col>
-
-                      </Row>
-                      <Row>OG
-                        <Col span={4}>
-                          <Form.Item label="" name="og1">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'og1', value)}
-                              value={patient.measurements.refraction.og1}
-                            />
-                          </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                          <Form.Item label="">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'og2', value)}
-                              value={patient.measurements.refraction.og2}
-                            />
-                          </Form.Item></Col>
-                        <Col span={4}>
-                          <Form.Item label="">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'og3', value)}
-                              value={patient.measurements.refraction.og3}
-                            />
-                          </Form.Item></Col>
-                      </Row>
-                    </Col>
-                    <Col span={6}>
-                      <Row>
-                        <Divider orientation="left">Add</Divider>
-                        <Col span={4}>
-                          <Form.Item label="">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'add', 'od', value)}
-                              value={patient.measurements.add.od}
-                            />
-                          </Form.Item>
-                          <Form.Item label="">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'add', 'og', value)}
-                              value={patient.measurements.add.og}
-                            />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col span={6}>
-
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Divider orientation="left">SC</Divider>
-                    <Col span={6}>
-                      <Row>OD
-                        <Col span={4}> <Form.Item label="" >
-                          <AutoComplete filterOption={filterOptions}
-                            onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'od1', value)}
-                            value={patient.measurements.refraction.od1}
-                          />
-                        </Form.Item></Col>
-                        <Col span={4}> <Form.Item label="">
-                          <AutoComplete filterOption={filterOptions}
-                            onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'od2', value)}
-                            value={patient.measurements.refraction.od2}
-                          />
-                        </Form.Item></Col>
-                        <Col span={4}> <Form.Item label="">
-                          <AutoComplete filterOption={filterOptions}
-                            onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'od3', value)}
-                            value={patient.measurements.refraction.od3}
-                          />
-                        </Form.Item></Col>
-
-                      </Row>
-                    </Col>
-                    <Col span={12}>
-                      <Row>
-                        <Col span={4}>
-                          <Form.Item label="">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'acuitySc', 'od', value)}
-                              value={patient.measurements.acuitySc.od}
-                            />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col span={6}>
-                      <Row>OG
-                        <Col span={4}>
-                          <Form.Item label="" name="og1">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'og1', value)}
-                              value={patient.measurements.refraction.og1}
-                            />
-                          </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                          <Form.Item label="">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'og2', value)}
-                              value={patient.measurements.refraction.og2}
-                            />
-                          </Form.Item></Col>
-                        <Col span={4}>
-                          <Form.Item label="">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'refraction', 'og3', value)}
-                              value={patient.measurements.refraction.og3}
-                            />
-                          </Form.Item></Col>
-                      </Row>
-                    </Col>
-                    <Col span={12}>
-                      <Row>
-                        <Col span={4}>
-                          <Form.Item label="">
-                            <AutoComplete filterOption={filterOptions}
-                              onChange={(value) => handleAutoCompleteChange('measurements', 'acuityAc', 'od', value)}
-                              value={patient.measurements.acuityAc.od}
-                            />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                    </Col>
-                  </Row>
-                  <Divider orientation="left">PIO</Divider>
-
-                  <Row>OD
-                    <Col span={2}>
-                      <Form.Item label="" >
-                        <AutoComplete filterOption={filterOptions}
-                          onChange={(value) => handleAutoCompleteChange('measurements', 'pio', 'od', value)}
-                          value={patient.measurements.pio.od}
-                        />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                  <Row>OG
-                    <Col span={2}>
-                      <Form.Item label="">
-                        <AutoComplete filterOption={filterOptions}
-                          onChange={(value) => handleAutoCompleteChange('measurements', 'pio', 'og', value)}
-                          value={patient.measurements.pio.og}
-                        />
-                      </Form.Item>
-                    </Col>
-                    <Col span={2} offset={2}><Divider orientation="left">Pachymétrie</Divider>
-                      <Form.Item label="">
-                        <AutoComplete filterOption={filterOptions}
-                          onChange={(value) => handleAutoCompleteChange('measurements', 'pachymetrie', 'od', value)}
-                          value={patient.measurements.pachymetrie.od}
-                        />
-                      </Form.Item>
-                      <Form.Item label="">
-                        <AutoComplete filterOption={filterOptions}
-                          onChange={(value) => handleAutoCompleteChange('measurements', 'pachymetrie', 'og', value)}
-                          value={patient.measurements.pachymetrie.og}
-                        />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </Form> */}
               </TabPane>
               <TabPane tab="Examen" key="3">
-                <Form layout="vertical" form={formExams}>
-                  <Divider orientation="left">LAF</Divider>
-                  <Form.Item label="LAF OD">
-                    <AutoComplete filterOption={filterOptions}
-                      options={autoCompleteOptions.map((option) => ({ value: option }))}
-                      onChange={(value) => handleAutoCompleteChange('exams', 'laf', 'od', value)}
-                      value={patient.exams.laf.od}
-                    />
-                  </Form.Item>
-                  <Form.Item label="LAF OG">
-                    <AutoComplete filterOption={filterOptions}
-                      options={autoCompleteOptions.map((option) => ({ value: option }))}
-                      onChange={(value) => handleAutoCompleteChange('exams', 'laf', 'og', value)}
-                      value={patient.exams.laf.og}
-                    />
-                  </Form.Item>
-                  <Divider orientation="left">FO</Divider>
-                  <Form.Item label="FO OD">
-                    <AutoComplete filterOption={filterOptions}
-                      options={autoCompleteOptions2.map((option) => ({ value: option }))}
-                      onChange={(value) => handleAutoCompleteChange('exams', 'fo', 'od', value)}
-                      value={patient.exams.fo.od}
-                    />
-                  </Form.Item>
-                  <Form.Item label="FO OG">
-                    <AutoComplete filterOption={filterOptions}
-                      options={autoCompleteOptions2.map((option) => ({ value: option }))}
-                      onChange={(value) => handleAutoCompleteChange('exams', 'fo', 'og', value)}
-                      value={patient.exams.fo.og}
-                    />
-                  </Form.Item>
-                  <Divider orientation="left">Externe</Divider>
-                  <Form.Item label="Externe OD">
-                    <AutoComplete filterOption={filterOptions}
-                      onChange={(value) => handleAutoCompleteChange('exams', 'external', 'od', value)}
-                      value={patient.exams.external.od}
-                    />
-                  </Form.Item>
-                  <Form.Item label="Externe OG">
-                    <AutoComplete filterOption={filterOptions}
-                      onChange={(value) => handleAutoCompleteChange('exams', 'external', 'og', value)}
-                      value={patient.exams.external.og}
-                    />
-                  </Form.Item>
-                  <Form.Item label="Conclusion">
-                    <AutoComplete filterOption={filterOptions}
-                      onChange={(value) => handleMeasurementChange('exams', 'conclusion', value)}
-                      value={patient.exams.conclusion}
-                    />
-                  </Form.Item>
-                </Form>
+                <Row>
+                  <Col>
+                    <Form layout="vertical" form={formExams}>
+                      <Divider orientation="left">Motif de consultation</Divider>
+                      <Form.Item label="">
+                        <AutoComplete filterOption={filterOptions}
+                          onChange={(value) => handleMeasurementChange('exams', 'motif', value)}
+                          value={patient.exams.motif}
+                        />
+                      </Form.Item>
+                      <Divider orientation="left">LAF</Divider>
+                      <Form.Item label="LAF OD">
+                        <AutoComplete filterOption={filterOptions}
+                          options={autoCompleteOptions.map((option) => ({ value: option }))}
+                          onChange={(value) => handleAutoCompleteChange('exams', 'laf', 'od', value)}
+                          value={patient.exams.laf.od}
+                        />
+                      </Form.Item>
+                      <Form.Item label="LAF OG">
+                        <AutoComplete filterOption={filterOptions}
+                          options={autoCompleteOptions.map((option) => ({ value: option }))}
+                          onChange={(value) => handleAutoCompleteChange('exams', 'laf', 'og', value)}
+                          value={patient.exams.laf.og}
+                        />
+                      </Form.Item>
+                      <Divider orientation="left">FO</Divider>
+                      <Form.Item label="FO OD">
+                        <AutoComplete filterOption={filterOptions}
+                          options={autoCompleteOptions2.map((option) => ({ value: option }))}
+                          onChange={(value) => handleAutoCompleteChange('exams', 'fo', 'od', value)}
+                          value={patient.exams.fo.od}
+                        />
+                      </Form.Item>
+                      <Form.Item label="FO OG">
+                        <AutoComplete filterOption={filterOptions}
+                          options={autoCompleteOptions2.map((option) => ({ value: option }))}
+                          onChange={(value) => handleAutoCompleteChange('exams', 'fo', 'og', value)}
+                          value={patient.exams.fo.og}
+                        />
+                      </Form.Item>
+                      <Divider orientation="left">Externe</Divider>
+                      <Form.Item label="Externe OD">
+                        <AutoComplete filterOption={filterOptions}
+                          onChange={(value) => handleAutoCompleteChange('exams', 'external', 'od', value)}
+                          value={patient.exams.external.od}
+                        />
+                      </Form.Item>
+                      <Form.Item label="Externe OG">
+                        <AutoComplete filterOption={filterOptions}
+                          onChange={(value) => handleAutoCompleteChange('exams', 'external', 'og', value)}
+                          value={patient.exams.external.og}
+                        />
+                      </Form.Item>
+                      <Divider orientation="left">Conclusion</Divider>
+                      <Form.Item label="">
+                        <AutoComplete filterOption={filterOptions}
+                          onChange={(value) => handleMeasurementChange('exams', 'conclusion', value)}
+                          value={patient.exams.conclusion}
+                        />
+                      </Form.Item>
+                    </Form>
+                  </Col>
+                </Row>
               </TabPane>
               <TabPane tab="Ordonnance et courrier" key="4">
-                <Form.Item  layout="vertical" label="Médicaments">
+                {/* <Form.Item layout="vertical" label="Médicaments">
                   <MedicationSelect medications={medications.sort((a, b) => a.name.localeCompare(b.name))}
                     onDeselectMedication={handleDeselectMedication} // Nouvelle fonction pour la désélection
                     onSelectMedication={handleSelectMedication} />
-                </Form.Item>
-                <Form layout="vertical" form={formPrescription}>
-                  <Form.Item label="Ordonnance">
-                    <Input.TextArea
-                      value={patient.description.prescription}
-                      onChange={(e) => handleMeasurementChange('description', 'prescription', e.target.value)}
-                      autoSize={{ minRows: 3, maxRows: 6 }}
-                    />
-                  </Form.Item>
-                  <Form.Item label="Courrier">
-                    <Input.TextArea
-                      value={patient.description.courrier}
-                      onChange={(e) => handleMeasurementChange('description', 'courrier', e.target.value)}
-                      autoSize={{ minRows: 3, maxRows: 6 }}
-                    />
-                  </Form.Item>
-                </Form>
+                </Form.Item> */}
+                <Courriers generateCourrier={generateCourrier} setCourriers={(e) => handleMeasurementChange('description', 'courrier', e)} />
+                <Ordonnances generatePrescription={generatePrescription} setOrdonnances={(e) => handleMeasurementChange('description', 'prescription', e)} />
               </TabPane>
               <TabPane tab="Cotation" key="5">
                 <Form layout="vertical">
@@ -686,15 +482,26 @@ const EditPatientDetailPage = () => {
                   </Form.Item>
                 </Form>
               </TabPane>
+              <TabPane tab="Imagerie" key="6">
+                <Form layout="vertical">
+                  <Divider orientation="left">Imagerie</Divider>
+                  <Form.Item label="Imagerie">
+                    <Input
+                      value={patient.rating}
+                      onChange={(e) => handleInputChange('rating', e.target.value)}
+                    />
+                  </Form.Item>
+                </Form>
+              </TabPane>
             </Tabs>
             <Divider />
             <Form.Item>
               <Button type="primary" onClick={() => handleSave("ordonnance")}>
-                Ordonnance
+                Enregistrer consultation
               </Button>
-              <Button type="primary" onClick={() => handleSave("courrier")}>
-                Courrier
-              </Button>
+              {/* <Button style={{ marginLeft: 20 }} type="primary" onClick={() => handleSave("courrier")}>
+                Générer courrier
+              </Button> */}
               {/* <Button type="default" onClick={() => axios.get(`http://localhost:3001/generate-prescription?patientName=toto&medication=toto&dosage=toto`, {
                 responseType: 'blob'
               })

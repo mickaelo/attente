@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, DatePicker, Select } from 'antd';
+import axios from 'axios';
 
 const { Option } = Select;
 
-const AddPatientForm = () => {
+const AddPatientForm = ({ getPatients }) => {
   const [form] = Form.useForm();
 
   const handleSubmit = (values) => {
     // Passer les données du nouveau patient à la fonction onAddPatient
-
+    axios.post(`http://localhost:3002/users`, { user: values })
+    getPatients()
     // Réinitialiser le formulaire après l'ajout du patient
     form.resetFields();
   };

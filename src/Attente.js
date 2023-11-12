@@ -3,6 +3,7 @@ import { Tabs, Table, Button, Popconfirm, message, Tag } from 'antd';
 import { useNavigate } from "react-router-dom";
 import backgroundImg from './background.jpeg'; // Remplace avec le chemin de ton image de fond
 import AppointmentCalendar from './Calendar';
+import MyAgenda from './Agenda';
 const { TabPane } = Tabs;
 
 const backgroundStyle = {
@@ -13,7 +14,7 @@ const backgroundStyle = {
     color: 'white',
 };
 const generateRandomStatus = () => {
-    const statuses = ['Pris en charge', 'En attente'];
+    const statuses = ['Accueil', 'Orthoptiste', 'Médecin'];
     const randomIndex = Math.floor(Math.random() * statuses.length);
     return statuses[randomIndex];
 };
@@ -77,7 +78,7 @@ const QueueManager = () => {
             dataIndex: 'status',
             key: 'status',
             render: (status) => (
-                <Tag color={status === 'En attente' ? 'orange' : status === 'En cours' ? 'green' : 'blue'}>
+                <Tag color={status === 'Accueil' ? 'orange' : status === 'Médecin' ? 'green' : 'blue'}>
                     {status}
                 </Tag>
             ),
@@ -116,6 +117,10 @@ const QueueManager = () => {
                 <TabPane tab="Calendrier" key="2">
                     {/* Contenu du calendrier */}
                     <AppointmentCalendar />
+                </TabPane>
+                <TabPane tab="Agenda" key="3">
+                    {/* Contenu du calendrier */}
+                    <MyAgenda />
                 </TabPane>
             </Tabs>
             

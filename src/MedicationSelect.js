@@ -17,14 +17,14 @@ const MedicationSelect = ({ medications, onDeselectMedication, onSelectMedicatio
     return (
         <Select
             mode="multiple"
-            autoSize={{ minRows: 3, maxRows: 6 }}
+            style={{ minWidth: 150 }}
             placeholder="Sélectionnez des médicaments"
             onChange={handleSelectChange}
             onDeselect={handleDeselect}
         >
             {medications.map((medication) => (
                 <Select.Option key={medication.id} value={medication.id}>
-                    {medication.name}
+                    {medication.name} ({medication.posology})
                 </Select.Option>
             ))}
         </Select>

@@ -17,6 +17,7 @@ const { generateCourrierPdf } = require('./courrier-generator');
 app.use(express.json());
 // use it before all route definitions
 app.use(cors({ origin: 'http://127.0.0.1:3000' }));
+app.options('*', cors());
 
 app.post('/generate-prescription', async (req, res) => {
     console.log(req.body)

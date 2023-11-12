@@ -41,7 +41,7 @@ async function generateInvoicePdf(patient, path) {
 
 function generateHeader(doc) {
     doc
-        .image("logo.png", 30, 45, { width: 100 })
+        .image("./logo.png", 30, 45, { width: 100 })
         .fillColor("#444444")
         .fontSize(14)
         .text("Centre hospitalier de Haguenau", 110, 57)
@@ -56,9 +56,9 @@ function generateCustomerInformation(doc, invoice) {
     doc
         .fillColor("#444444")
         .fontSize(14)
-        .text(`M. ${invoice.name}`, 50, 160, { align: "right" })
+        .text(`${invoice.name}`, 50, 140, { align: "right" })
         .fontSize(12)
-        .text(`Né le 28/07/1995`, 50, 190, { align: "right" });
+        .text(`Né le 28/07/1995`, 50, 160, { align: "right" });
 }
 
 function generateInvoiceTable(doc, invoice) {
@@ -131,8 +131,8 @@ function generateTableRow(
     description,
 ) {
     doc
-        .fontSize(10)
-        .text(description, 150, y)
+        .fontSize(12)
+        .text(description, 100, y)
 }
 
 function generateHr(doc, y) {
