@@ -28,7 +28,9 @@ class ConsultationsController < ApplicationController
   
       if @consultation.save
         # Gestion de la création réussie (par exemple, redirection vers la page de consultation)
-        redirect_to @consultation, notice: 'La consultation a été créée avec succès.'
+        render json: @consultation
+      else
+        render json: @consultation.errors, status: :unprocessable_entity
       end
     end
   
@@ -39,7 +41,7 @@ class ConsultationsController < ApplicationController
     end
   
     def consultation_params
-      params.require(:consultation).permit(:prescription, :antecedents, :allergies, :name, :status, :diagnosis, :date, :presence, :measurements, :exams, :description)
+      params.require(:consultation).permit(:prescription, :antecedents, :allergies, :name, :status, :diagnosis, :date, :presence, :measurements, :exams, :description, :user_id)
     end
   end
   

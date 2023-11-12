@@ -14,6 +14,7 @@ import EditableTable from './Tableau';
 import MedicationSelect from './MedicationSelect';
 import Ordonnances from './Ordonnances';
 import Courriers from './Courriers';
+import { Routes, Route, useParams } from 'react-router-dom';
 
 
 const autoCompleteOptions = ['oeil blanc, cornée claire, chambre antérieure corne et formée, cristallin clair'];
@@ -24,97 +25,16 @@ const { Option } = Select;
 const { Title } = Typography;
 const { TabPane } = Tabs;
 
-const EditPatientDetailPage = () => {
-  const [medications, setMedications] = useState([])
-  const [selectedMedications, setSelectedMedications] = useState([]);
-  const [prescriptions, setPrescriptions] = useState([]);
-  const [letters, setLetters] = useState([]);
-  const [prescriptionModalVisible, setPrescriptionModalVisible] = useState(false);
-  const [letterModalVisible, setLetterModalVisible] = useState(false);
+const EditPatientDetailPage = (parms) => {
+  let { id } = useParams();
+  console.log(id)
 
-  const [form] = Form.useForm();
 
-  const showPrescriptionModal = () => {
-    setPrescriptionModalVisible(true);
-  };
-
-  const handlePrescriptionModalOk = () => {
-    form.validateFields().then((values) => {
-      const newPrescription = {
-        medication: values.medication,
-        dosage: values.dosage,
-        duration: values.duration,
-      };
-      setPrescriptions((prevPrescriptions) => [...prevPrescriptions, newPrescription]);
-      setPrescriptionModalVisible(false);
-      form.resetFields();
-    });
-  };
-
-  const handlePrescriptionModalCancel = () => {
-    setPrescriptionModalVisible(false);
-  };
-
-  const showLetterModal = () => {
-    setLetterModalVisible(true);
-  };
-
-  const handleLetterModalOk = () => {
-    form.validateFields().then((values) => {
-      const newLetter = {
-        subject: values.subject,
-        content: values.content,
-      };
-      setLetters((prevLetters) => [...prevLetters, newLetter]);
-      setLetterModalVisible(false);
-      form.resetFields();
-    });
-  };
-
-  const handleLetterModalCancel = () => {
-    setLetterModalVisible(false);
-  };
-  const handleSelectMedication = (selectedValues) => {
-    setSelectedMedications(selectedValues);
-
-    // Générez le texte de l'ordonnance à partir des médicaments sélectionnés
-    const selectedMedicationsInfo = selectedValues.map((medicationId) => {
-      // Récupérez les détails du médicament en fonction de l'ID
-      const medication = medications.find((m) => m.id === medicationId); // Implémentez cette fonction
-
-      // Retournez le nom et la posologie du médicament
-      return `${medication.name}${medication.posology ? " - " + medication.posology : ""}`;
-    });
-
-    // Mettez à jour le champ d'ordonnance
-    handleMeasurementChange('description', 'prescription', selectedMedicationsInfo.join('\n'))
-  };
-
-  const handleDeselectMedication = (deselectedValue) => {
-    const updatedMedications = selectedMedications.filter(
-      (medicationId) => medicationId !== deselectedValue
-    );
-
-    setSelectedMedications(updatedMedications);
-
-    const updatedMedicationsInfo = updatedMedications.map((medicationId) => {
-      const medication = medications.find((m) => m.id === medicationId); // Implémentez cette fonction
-      return `${medication.name}${medication.posology ? " - " + medication.posology : ""}`;
-    });
-
-    handleMeasurementChange('description', 'prescription', updatedMedicationsInfo.join('\n'))
-  };
-
-  useEffect(() => {
-    axios.get(`http://localhost:3002/medications`)
-      .then(res => {
-        setMedications(res.data)
-      })
-  }, [])
   const [consultations, setConsultations] = useState(generateRandomConsultations(50))
   const [patient, setPatient] = useState({
     id: 1,
-    name: 'John Doe',
+    firstName: 'John Doe',
+    lastName: '',
     status: 'En attente',
     diagnosis: 'Aucun problème de santé connu.',
     allergies: '',
@@ -144,6 +64,13 @@ const EditPatientDetailPage = () => {
     rating: '',
   });
 
+  useEffect(() => {
+    axios.get(`http://localhost:3002/users/${id}`).then(res => {
+      console.log(res.data)
+      setPatient({ ...patient, ...res.data });
+    })
+  }, [])
+console.log(patient)
   const [formPatient] = Form.useForm();
   const [formMeasurements] = Form.useForm();
   const [formPrescription] = Form.useForm();
@@ -187,15 +114,22 @@ const EditPatientDetailPage = () => {
   }
   const handleSave = (type) => {
     // Récupérer les valeurs de tous les formulaires
-    const patientValues = formPatient.getFieldsValue();
-    const prescriptionValues = formPrescription.getFieldsValue()
-    const measurementsValues = formMeasurements.getFieldsValue();
-    const examsValues = formExams.getFieldsValue();
+    // const patientValues = formPatient.getFieldsValue();
+    // const prescriptionValues = formPrescription.getFieldsValue()
+    // const measurementsValues = formMeasurements.getFieldsValue();
+    // const examsValues = formExams.getFieldsValue();
     // Créer une nouvelle consultation avec les informations du patient et des formulaires
     const newConsultation = {
-      ...examsValues,
-      ...patient,
+      prescription: patient.prescription,
+      antecedents: patient.antecedents,
+      status: patient.status,
+      allergies: patient.allergies,
+      name: patient.firstName,
+      diagnosis: patient.diagnosis,
+      exams: patient.exams,
+      measurements: patient.measurements,
       date: moment(),
+      user_id: patient.id
       // measurements: {
       //   refraction: measurementsValues.refraction,
       //   acuitySC: measurementsValues.acuitySC,
@@ -209,7 +143,7 @@ const EditPatientDetailPage = () => {
       // Ajoutez d'autres champs selon vos besoins
     };
     setConsultations([...consultations, newConsultation])
-    axios.post(`http://localhost:3002/consultations`, { consultation: newConsultation })
+    axios.post(`http://localhost:3002/consultations`, newConsultation)
     // Vous pouvez ensuite stocker cette nouvelle consultation dans votre base de données ou votre état local
     console.log('Nouvelle consultation:', newConsultation);
     // if (type === "courrier") {
@@ -358,7 +292,7 @@ const EditPatientDetailPage = () => {
         <Col span={20}>
           <div style={formStyle}>
             <Title level={2} style={{ color: '#1890ff' }}>
-              Suivi de {patient.name}
+              Suivi de {patient.firstName} {patient.lastName}
             </Title>
             <PreviousConsultationsSummary previousConsultations={consultations} />
             <Tabs defaultActiveKey="1">

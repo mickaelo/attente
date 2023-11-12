@@ -68,7 +68,7 @@ const generateRandomPatients = () => {
 };
 
 
-const PatientList = ({ onDeletePatient }) => {
+const PatientList = () => {
   const [searchForm] = Form.useForm();
   const [filteredPatients, setFilteredPatients] = useState(null);
   const patients = generateRandomPatients();
@@ -80,6 +80,12 @@ const PatientList = ({ onDeletePatient }) => {
     axios.get(`http://localhost:3002/users`)
       .then(res => {
         setFilteredPatients(res.data)
+      })
+  }
+  const onDeletePatient = (patient) => {
+    axios.delete(`http://localhost:3002/users/${patient.id}`)
+      .then(res => {
+        getPatients()
       })
   }
   const columns = [
@@ -275,8 +281,12 @@ const PatientList = ({ onDeletePatient }) => {
           onCancel={handleEditCancel}
           onUpdatePatient={(updatedPatient) => {
             // Implémente la logique pour mettre à jour le patient dans la liste
+            axios.put(`http://localhost:3002/users/${updatedPatient.id}`, updatedPatient)
+              .then(res => {
+                handleEditCancel();
+                getPatients()
+              })
             console.log('Patient mis à jour :', updatedPatient);
-            handleEditCancel();
           }}
         />
       )}

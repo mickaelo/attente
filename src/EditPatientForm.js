@@ -45,9 +45,9 @@ const EditPatientForm = ({ visible, patient, onCancel, onUpdatePatient }) => {
           <Input />
         </Form.Item>
 
-        <Form.Item label="Date de Naissance" name="birthDate">
+        {/* <Form.Item label="Date de Naissance" name="birthDate">
           <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item label="Matricule" name="idNumber">
           <Input />

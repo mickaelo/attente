@@ -17,7 +17,7 @@ function App() {
           <Route path="/agenda" element={<MyAgenda />} />
           <Route path="/medications" element={<MedicationsPage />} />
           <Route path="/file-attente" element={<QueueManager />} />
-          <Route path="/patient" element={<Patient />} />
+          <Route path="/consultation/:id" element={<Patient />} />
           <Route path="/liste-patients" element={<PatientList />} />
         </Routes>
       </div>

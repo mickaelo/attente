@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-    before_action :set_medication, only: [:show, :edit, :update, :destroy]
+    before_action :set_user, only: [:show, :edit, :update, :destroy]
     protect_from_forgery with: :null_session
 
     def index
@@ -8,7 +8,8 @@ class UsersController < ApplicationController
     end
   
     def show
-      render json: @users
+      @user = User.find(params[:id])
+      render json: @user
     end
   
     def new
@@ -26,14 +27,18 @@ class UsersController < ApplicationController
     end
   
     def edit
-      render json: @users
+      if @user.update(user_params)
+        render json: @user
+      else
+        render json: @user.errors, status: :unprocessable_entity
+      end
     end
   
     def update
       if @user.update(user_params)
-        render json: @users
+        render json: @user
       else
-        render json: @users
+        render json: @user.errors, status: :unprocessable_entity
       end
     end
   
@@ -45,7 +50,7 @@ class UsersController < ApplicationController
     private
   
     def set_user
-      render json: @users
+      @user = User.find(params[:id])
     end
   
     def user_params

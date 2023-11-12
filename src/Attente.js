@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Tabs, Table, Button, Popconfirm, message, Tag } from 'antd';
 import { useNavigate } from "react-router-dom";
 import backgroundImg from './background.jpeg'; // Remplace avec le chemin de ton image de fond
@@ -40,7 +41,7 @@ const generatePatientList = (count) => {
 
 const QueueManager = () => {
     const [queue, setQueue] = useState([]);
-    const [patients, setPatients] = useState(generatePatientList(100));
+    const [patients, setPatients] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -52,8 +53,15 @@ const QueueManager = () => {
         const sampleQueueData = patients;
 
         setQueue(sampleQueueData);
+        getPatients()
     }, []); // Utilise une dépendance vide pour n'effectuer l'effet qu'une seule fois à la création du composant
+    const getPatients = () => {
+        axios.get(`http://localhost:3002/users`)
+            .then(res => {
+                setQueue(res.data)
+            })
 
+    }
 
     const removeFromQueue = (userId) => {
         // Ici, tu devrais envoyer une requête HTTP vers ton backend pour retirer l'utilisateur de la file d'attente
@@ -69,8 +77,13 @@ const QueueManager = () => {
 
     const columns = [
         {
+            title: 'Prénom',
+            dataIndex: 'firstName',
+            key: 'name',
+        },
+        {
             title: 'Nom',
-            dataIndex: 'name',
+            dataIndex: 'lastName',
             key: 'name',
         },
         {
@@ -101,10 +114,12 @@ const QueueManager = () => {
             title: '',
             key: '',
             render: (text, record) => (
-                <Button onClick={() => navigate("/patient")}>edit</Button>
+                <Button onClick={() => navigate("/consultation/"+record.id)}>edit</Button>
             ),
         },
     ];
+
+    console.log(patients)
 
     return (
         <div style={backgroundStyle}>
@@ -123,7 +138,7 @@ const QueueManager = () => {
                     <MyAgenda />
                 </TabPane>
             </Tabs>
-            
+
         </div>
     );
 };
