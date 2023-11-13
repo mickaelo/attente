@@ -1,5 +1,6 @@
 # app/controllers/consultations_controller.rb
 class ConsultationsController < ApplicationController
+    before_action :set_consultation, only: [:show, :edit, :update, :destroy]
     protect_from_forgery with: :null_session
 
     def index
@@ -18,6 +19,19 @@ class ConsultationsController < ApplicationController
       # Logique de l'action d'édition
     end
   
+    def update
+      if @consultation.update(consultation_params)
+        render json: @consultation
+      else
+        render json: @consultation.errors, status: :unprocessable_entity
+      end
+    end
+
+    
+    def destroy
+      @consultation.destroy
+      head :no_content
+    end
   
     def new
       @consultation = Consultation.new
@@ -41,7 +55,7 @@ class ConsultationsController < ApplicationController
     end
   
     def consultation_params
-      params.require(:consultation).permit(:prescription, :antecedents, :allergies, :name, :status, :diagnosis, :date, :presence, :measurements, :description, :user_id, :exams => [:conclusion, :motif, :external => [:od, :og], :fo => [:od, :og], :laf => [:od, :og]])
+      params.require(:consultation).permit(:prescription, :antecedents, :allergies, :name, :status, :diagnosis, :date, :presence, :measurements, :description, :owner_id, :user_id, :exams => [:conclusion, :motif, :external => [:od, :og], :fo => [:od, :og], :laf => [:od, :og]])
     end
   end
   

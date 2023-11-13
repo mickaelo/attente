@@ -14,7 +14,7 @@ const Topbar = () => {
     }>
         <div style={{ display: 'flex', alignItems: 'center' }}>
             <img src={Logo} alt="Logo" style={{ width: '40px', height: '40px', margin: '0 16px' }} />
-            <span style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold' }}>Nom de l'Application</span>
+            <span style={{ color: '#fff', fontSize: '20px', fontWeight: 'bold' }}>Sophtalmo</span>
         </div>
         <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']} style={{ lineHeight: '64px' }}>
             <Menu.Item key="1" icon={<UnorderedListOutlined />}>
