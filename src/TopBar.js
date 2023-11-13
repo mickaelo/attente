@@ -18,7 +18,7 @@ const Topbar = () => {
         </div>
         <Menu theme="dark" mode="horizontal" defaultSelectedKeys={['1']} style={{ lineHeight: '64px' }}>
             <Menu.Item key="1" icon={<UnorderedListOutlined />}>
-                <Link to="/file-attente" style={{ color: '#fff' }}>File d'Attente</Link>
+                <Link to="/" style={{ color: '#fff' }}>File d'Attente</Link>
             </Menu.Item>
             <Menu.Item key="2" icon={<TeamOutlined />}>
                 <Link to="/liste-patients" style={{ color: '#fff' }}>Liste des Patients</Link>

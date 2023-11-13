@@ -1,6 +1,8 @@
 // EditPatientDetailPage.js
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Select, Button, message, Typography, Divider, Row, Col, Tabs, AutoComplete, Modal } from 'antd';
+import { Form, Input, Select, Button, message, Typography, Divider, Row, Col, Tabs, AutoComplete } from 'antd';
+import { PageHeader } from '@ant-design/pro-layout';
+
 import backgroundImg from './background.jpeg'; // Remplace avec le chemin de ton image de fond
 import { useReactToPrint } from 'react-to-print';
 import { saveAs } from 'file-saver';
@@ -14,7 +16,8 @@ import EditableTable from './Tableau';
 import MedicationSelect from './MedicationSelect';
 import Ordonnances from './Ordonnances';
 import Courriers from './Courriers';
-import { Routes, Route, useParams } from 'react-router-dom';
+import { Routes, useNavigate, useParams } from 'react-router-dom';
+import TextArea from 'antd/es/input/TextArea';
 
 
 const autoCompleteOptions = ['oeil blanc, cornée claire, chambre antérieure corne et formée, cristallin clair'];
@@ -30,22 +33,22 @@ const EditPatientDetailPage = (parms) => {
   console.log(id)
   const [consultations, setConsultations] = useState([]);
   const getConsultations = () => {
-      console.log("get")
-      axios.get(`http://localhost:3002/consultations`)
-          .then(res => {
-              console.log(res)
-              const sorted = res.data.sort(function (a, b) {
-                  // Turn your strings into dates, and then subtract them
-                  // to get a value that is either negative, positive, or zero.
-                  return new Date(a?.date) - new Date(b?.date);
-              })
-              setConsultations(sorted)
-          })
+    console.log("get")
+    axios.get(`http://localhost:3002/consultations`)
+      .then(res => {
+        console.log(res)
+        const sorted = res.data.sort(function (a, b) {
+          // Turn your strings into dates, and then subtract them
+          // to get a value that is either negative, positive, or zero.
+          return new Date(a?.date) - new Date(b?.date);
+        })
+        setConsultations(sorted)
+      })
   }
 
   useEffect(() => {
-      console.log("test")
-      getConsultations()
+    console.log("test")
+    getConsultations()
   }, [])
 
   const [patient, setPatient] = useState({
@@ -82,12 +85,11 @@ const EditPatientDetailPage = (parms) => {
   });
 
   useEffect(() => {
-    axios.get(`http://localhost:3002/users/${id}`).then(res => {
-      console.log(res.data)
-      setPatient({ ...patient, ...res.data });
+    axios.get(`http://localhost:3002/consultations/${id}`).then(res => {
+      setPatient({ ...res.data, ...res.data.user });
     })
+
   }, [])
-console.log(patient)
   const [formPatient] = Form.useForm();
   const [formMeasurements] = Form.useForm();
   const [formPrescription] = Form.useForm();
@@ -136,6 +138,7 @@ console.log(patient)
     // const measurementsValues = formMeasurements.getFieldsValue();
     // const examsValues = formExams.getFieldsValue();
     // Créer une nouvelle consultation avec les informations du patient et des formulaires
+    console.log(patient)
     const newConsultation = {
       prescription: patient.prescription,
       antecedents: patient.antecedents,
@@ -146,7 +149,7 @@ console.log(patient)
       exams: patient.exams,
       measurements: patient.measurements,
       date: moment(),
-      user_id: patient.id
+      user_id: patient.user.id
       // measurements: {
       //   refraction: measurementsValues.refraction,
       //   acuitySC: measurementsValues.acuitySC,
@@ -159,10 +162,11 @@ console.log(patient)
       // },
       // Ajoutez d'autres champs selon vos besoins
     };
+    console.log(newConsultation)
     setConsultations([...consultations, newConsultation])
-    axios.post(`http://localhost:3002/consultations`, newConsultation)
-    .then(() => getConsultations())
-   
+    axios.put(`http://localhost:3002/consultations/${id}`, newConsultation)
+      .then(() => getConsultations())
+
     // Vous pouvez ensuite stocker cette nouvelle consultation dans votre base de données ou votre état local
     console.log('Nouvelle consultation:', newConsultation);
     // if (type === "courrier") {
@@ -260,8 +264,8 @@ console.log(patient)
         [category]: value,
       },
     }));
-    console.log(patient)
   };
+  console.log(patient)
 
   const handleExamChange = (category, eye, value) => {
     setPatient((prevPatient) => ({
@@ -304,41 +308,44 @@ console.log(patient)
     padding: '20px',
     borderRadius: '10px',
   };
+  const navigate = useNavigate();
 
   return (
     <div style={backgroundStyle}>
-      <Row justify="center" align="middle" style={{ minHeight: '100vh' }}>
-        <Col span={20}>
-          <div style={formStyle}>
-            <Title level={2} style={{ color: '#1890ff' }}>
-              Suivi de {patient.firstName} {patient.lastName}
-            </Title>
-            <PreviousConsultationsSummary consultations={consultations} previousConsultations={consultations} />
-            <Tabs defaultActiveKey="1">
-              <TabPane tab="Informations générales" key="1">
-                <Form layout="vertical" form={formPatient}>
+      <div style={formStyle}>
+        <PageHeader
+          className="site-page-header"
+          onBack={() => navigate("/")}
+          title={`Suivi de ${patient.firstName} ${patient.lastName}`}
+        />
+
+        <PreviousConsultationsSummary consultations={consultations} previousConsultations={consultations} />
+        <Tabs defaultActiveKey="1">
+          <TabPane tab="Informations générales" key="1">
+            <Row>
+              <Col span={4}>
+                <Form layout="vertical">
                   {/* <Form.Item label="Nom" name="name">
                     <Input
                       value={patient.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
                     />
                   </Form.Item> */}
-                  <Form.Item label="Traitements" name="prescription">
-                    <Select mode='multiple'><Select.Option
-                      option={['Traitement1']}
+                  <Form.Item label="Traitements">
+                    <Input.TextArea
                       value={patient.prescription}
                       onChange={(e) => handleInputChange('prescription', e.target.value)}
                       autoSize={{ minRows: 3, maxRows: 6 }}
-                    >Test</Select.Option></Select>
+                    />
                   </Form.Item>
-                  <Form.Item label="Antécédents" name="antecedents">
+                  <Form.Item label="Antécédents">
                     <Input.TextArea
                       value={patient.antecedents}
                       onChange={(e) => handleInputChange('antecedents', e.target.value)}
                       autoSize={{ minRows: 3, maxRows: 6 }}
                     />
                   </Form.Item>
-                  <Form.Item label="Allergies" name="allergies">
+                  <Form.Item label="Allergies">
                     <Input.TextArea
                       value={patient.allergies}
                       onChange={(e) => handleInputChange('allergies', e.target.value)}
@@ -346,116 +353,128 @@ console.log(patient)
                     />
                   </Form.Item>
                 </Form>
-              </TabPane>
-              <TabPane tab="Mesures" key="2">
-                <EditableTable setMeasurements={(data) => setPatient({ ...patient, measurements: data })} />
-              </TabPane>
-              <TabPane tab="Examen" key="3">
-                <Row>
-                  <Col>
-                    <Form layout="vertical" form={formExams}>
-                      <Divider orientation="left">Motif de consultation</Divider>
-                      <Form.Item label="">
-                        <AutoComplete filterOption={filterOptions}
-                          onChange={(value) => handleMeasurementChange('exams', 'motif', value)}
-                          value={patient.exams.motif}
-                        />
-                      </Form.Item>
-                      <Divider orientation="left">LAF</Divider>
-                      <Form.Item label="LAF OD">
-                        <AutoComplete filterOption={filterOptions}
-                          options={autoCompleteOptions.map((option) => ({ value: option }))}
-                          onChange={(value) => handleAutoCompleteChange('exams', 'laf', 'od', value)}
-                          value={patient.exams.laf.od}
-                        />
-                      </Form.Item>
-                      <Form.Item label="LAF OG">
-                        <AutoComplete filterOption={filterOptions}
-                          options={autoCompleteOptions.map((option) => ({ value: option }))}
-                          onChange={(value) => handleAutoCompleteChange('exams', 'laf', 'og', value)}
-                          value={patient.exams.laf.og}
-                        />
-                      </Form.Item>
-                      <Divider orientation="left">FO</Divider>
-                      <Form.Item label="FO OD">
-                        <AutoComplete filterOption={filterOptions}
-                          options={autoCompleteOptions2.map((option) => ({ value: option }))}
-                          onChange={(value) => handleAutoCompleteChange('exams', 'fo', 'od', value)}
-                          value={patient.exams.fo.od}
-                        />
-                      </Form.Item>
-                      <Form.Item label="FO OG">
-                        <AutoComplete filterOption={filterOptions}
-                          options={autoCompleteOptions2.map((option) => ({ value: option }))}
-                          onChange={(value) => handleAutoCompleteChange('exams', 'fo', 'og', value)}
-                          value={patient.exams.fo.og}
-                        />
-                      </Form.Item>
-                      <Divider orientation="left">Externe</Divider>
-                      <Form.Item label="Externe OD">
-                        <AutoComplete filterOption={filterOptions}
-                          onChange={(value) => handleAutoCompleteChange('exams', 'external', 'od', value)}
-                          value={patient.exams.external.od}
-                        />
-                      </Form.Item>
-                      <Form.Item label="Externe OG">
-                        <AutoComplete filterOption={filterOptions}
-                          onChange={(value) => handleAutoCompleteChange('exams', 'external', 'og', value)}
-                          value={patient.exams.external.og}
-                        />
-                      </Form.Item>
-                      <Divider orientation="left">Conclusion</Divider>
-                      <Form.Item label="">
-                        <AutoComplete filterOption={filterOptions}
-                          onChange={(value) => handleMeasurementChange('exams', 'conclusion', value)}
-                          value={patient.exams.conclusion}
-                        />
-                      </Form.Item>
-                    </Form>
-                  </Col>
-                </Row>
-              </TabPane>
-              <TabPane tab="Ordonnance et courrier" key="4">
-                {/* <Form.Item layout="vertical" label="Médicaments">
+              </Col>
+            </Row>
+
+          </TabPane>
+          <TabPane tab="Mesures" key="2">
+            <EditableTable setMeasurements={(data) => {
+              console.log(data)
+              setPatient({ ...patient, measurements: data })}} />
+          </TabPane>
+          <TabPane tab="Examen" key="3">
+            <Form layout="vertical" form={formExams}>
+              <Row>
+                <Col span={4}>
+                  <Divider orientation="left">Motif de consultation</Divider>
+                  <Form.Item label="">
+                    <TextArea filterOption={filterOptions}
+                      onChange={(e) => handleMeasurementChange('exams', 'motif', e.target.value)}
+                      value={patient.exams.motif}
+                    />
+                  </Form.Item>
+                  <Divider orientation="left">Conclusion</Divider>
+                  <Form.Item label="">
+                    <TextArea filterOption={filterOptions}
+                      onChange={(e) => handleMeasurementChange('exams', 'conclusion', e.target.value)}
+                      value={patient.exams.conclusion}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col offset={1}>
+                  <Divider orientation="left">LAF</Divider>
+                  <Form.Item label="LAF OD">
+                    <AutoComplete filterOption={filterOptions}
+                      options={autoCompleteOptions.map((option) => ({ value: option }))}
+                      onChange={(value) => handleAutoCompleteChange('exams', 'laf', 'od', value)}
+                      value={patient.exams.laf.od}
+                    />
+                  </Form.Item>
+                  <Form.Item label="LAF OG">
+                    <AutoComplete filterOption={filterOptions}
+                      options={autoCompleteOptions.map((option) => ({ value: option }))}
+                      onChange={(value) => handleAutoCompleteChange('exams', 'laf', 'og', value)}
+                      value={patient.exams.laf.og}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col offset={1}>
+                  <Divider orientation="left">FO</Divider>
+                  <Form.Item label="FO OD">
+                    <AutoComplete filterOption={filterOptions}
+                      options={autoCompleteOptions2.map((option) => ({ value: option }))}
+                      onChange={(value) => handleAutoCompleteChange('exams', 'fo', 'od', value)}
+                      value={patient.exams.fo.od}
+                    />
+                  </Form.Item>
+                  <Form.Item label="FO OG">
+                    <AutoComplete filterOption={filterOptions}
+                      options={autoCompleteOptions2.map((option) => ({ value: option }))}
+                      onChange={(value) => handleAutoCompleteChange('exams', 'fo', 'og', value)}
+                      value={patient.exams.fo.og}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col offset={1}>
+                  <Divider orientation="left">Externe</Divider>
+                  <Form.Item label="Externe OD">
+                    <AutoComplete filterOption={filterOptions}
+                      onChange={(value) => handleAutoCompleteChange('exams', 'external', 'od', value)}
+                      value={patient.exams.external.od}
+                    />
+                  </Form.Item>
+                  <Form.Item label="Externe OG">
+                    <AutoComplete filterOption={filterOptions}
+                      onChange={(value) => handleAutoCompleteChange('exams', 'external', 'og', value)}
+                      value={patient.exams.external.og}
+                    />
+                  </Form.Item>
+
+                </Col>
+              </Row>
+            </Form>
+          </TabPane>
+          <TabPane tab="Ordonnance et courrier" key="4">
+            {/* <Form.Item layout="vertical" label="Médicaments">
                   <MedicationSelect medications={medications.sort((a, b) => a.name.localeCompare(b.name))}
                     onDeselectMedication={handleDeselectMedication} // Nouvelle fonction pour la désélection
                     onSelectMedication={handleSelectMedication} />
                 </Form.Item> */}
-                <Courriers generateCourrier={generateCourrier} setCourriers={(e) => handleMeasurementChange('description', 'courrier', e)} />
-                <Ordonnances generatePrescription={generatePrescription} setOrdonnances={(e) => handleMeasurementChange('description', 'prescription', e)} />
-              </TabPane>
-              <TabPane tab="Cotation" key="5">
-                <Form layout="vertical">
-                  <Divider orientation="left">Cotation</Divider>
-                  <Form.Item label="Cotation">
-                    <Input
-                      value={patient.rating}
-                      onChange={(e) => handleInputChange('rating', e.target.value)}
-                    />
-                  </Form.Item>
-                </Form>
-              </TabPane>
-              <TabPane tab="Imagerie" key="6">
-                <Form layout="vertical">
-                  <Divider orientation="left">Imagerie</Divider>
-                  <Form.Item label="Imagerie">
-                    <Input
-                      value={patient.rating}
-                      onChange={(e) => handleInputChange('rating', e.target.value)}
-                    />
-                  </Form.Item>
-                </Form>
-              </TabPane>
-            </Tabs>
-            <Divider />
-            <Form.Item>
-              <Button type="primary" onClick={() => handleSave("ordonnance")}>
-                Enregistrer consultation
-              </Button>
-              {/* <Button style={{ marginLeft: 20 }} type="primary" onClick={() => handleSave("courrier")}>
+            <Courriers generateCourrier={generateCourrier} setCourriers={(e) => handleMeasurementChange('description', 'courrier', e)} />
+            <Ordonnances generatePrescription={generatePrescription} setOrdonnances={(e) => handleMeasurementChange('description', 'prescription', e)} />
+          </TabPane>
+          <TabPane tab="Cotation" key="5">
+            <Form layout="vertical">
+              <Divider orientation="left">Cotation</Divider>
+              <Form.Item label="Cotation">
+                <Input
+                  value={patient.rating}
+                  onChange={(e) => handleInputChange('rating', e.target.value)}
+                />
+              </Form.Item>
+            </Form>
+          </TabPane>
+          <TabPane tab="Imagerie" key="6">
+            <Form layout="vertical">
+              <Divider orientation="left">Imagerie</Divider>
+              <Form.Item label="Imagerie">
+                <Input
+                  value={patient.rating}
+                  onChange={(e) => handleInputChange('rating', e.target.value)}
+                />
+              </Form.Item>
+            </Form>
+          </TabPane>
+        </Tabs>
+        <Divider />
+        <Form.Item>
+          <Button type="primary" onClick={() => handleSave("ordonnance")}>
+            Enregistrer consultation
+          </Button>
+          {/* <Button style={{ marginLeft: 20 }} type="primary" onClick={() => handleSave("courrier")}>
                 Générer courrier
               </Button> */}
-              {/* <Button type="default" onClick={() => axios.get(`http://localhost:3001/generate-prescription?patientName=toto&medication=toto&dosage=toto`, {
+          {/* <Button type="default" onClick={() => axios.get(`http://localhost:3001/generate-prescription?patientName=toto&medication=toto&dosage=toto`, {
                 responseType: 'blob'
               })
                 .then(res => {
@@ -466,12 +485,10 @@ console.log(patient)
               <Button type="default" onClick={() => generateReport('word')} style={{ marginLeft: '10px' }}>
                 Générer Word
               </Button> */}
-            </Form.Item>
-          </div>
-        </Col>
-      </Row>
+        </Form.Item>
+      </div>
 
-    </div>
+    </div >
   );
 };
 

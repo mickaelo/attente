@@ -2,11 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Table, Space, Button, Modal, Form, Input, DatePicker, Select } from 'antd';
 import EditPatientForm from './EditPatientForm'; // Assure-toi d'importer correctement le composant d'édition
 import moment from 'moment';
+import backgroundImg from './background.jpeg'; // Remplace avec le chemin de ton image de fond
 import AppointmentCalendar from './Calendar';
 import AddPatientForm from './AddPatient';
 import axios from 'axios';
 const { confirm } = Modal;
 const { Option } = Select;
+
+
+const backgroundStyle = {
+  backgroundImage: `url(${backgroundImg})`,
+  backgroundSize: 'cover',
+  minHeight: '100vh',
+  padding: '20px',
+  color: 'white',
+};
 
 const generateRandomDate = () => {
   const start = new Date(1950, 0, 1);
@@ -218,7 +228,7 @@ const PatientList = () => {
   };
 
   return (
-    <div>
+    <div style={backgroundStyle}>
       <h2>Liste des Patients</h2>
       {/* Formulaire de recherche */}
       <Form

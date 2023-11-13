@@ -4,14 +4,14 @@ class ConsultationsController < ApplicationController
     protect_from_forgery with: :null_session
 
     def index
-      @consultations = Consultation.all
-      render json: @consultations
+      @consultations = Consultation.includes(:user).all
+      render json: @consultations, include: ['user']
 
     end
   
     def show
-      @consultation = Consultation.find(params[:id])
-      render json: @consultation
+      @consultation = Consultation.includes(:user).find(params[:id])
+      render json: @consultation, include: ['user']
 
     end
 
@@ -55,7 +55,7 @@ class ConsultationsController < ApplicationController
     end
   
     def consultation_params
-      params.require(:consultation).permit(:prescription, :antecedents, :allergies, :name, :status, :diagnosis, :date, :presence, :measurements, :description, :owner_id, :user_id, :exams => [:conclusion, :motif, :external => [:od, :og], :fo => [:od, :og], :laf => [:od, :og]])
+      params.require(:consultation).permit(:end_date, :prescription, :antecedents, :allergies, :name, :status, :diagnosis, :date, :presence, :measurements, :description, :owner_id, :user_id, :exams => [:conclusion, :motif, :external => [:od, :og], :fo => [:od, :og], :laf => [:od, :og]])
     end
   end
   

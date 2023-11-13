@@ -12,9 +12,10 @@ import {
     Appointments,
     AppointmentForm,
     AppointmentTooltip,
+    DateNavigator,
     WeekView,
     EditRecurrenceMenu,
-    AllDayPanel,
+    TodayButton,
     ConfirmationDialog,
     GroupingPanel,
     DayView,
@@ -69,27 +70,29 @@ const MyAgenda = () => {
     const [mainResourceName, setMainResourceName] = useState('ownerId');
     const [patients, setPatients] = useState([]);
     const [resources, setResources] = useState([
-      
+
     ]);
 
     useEffect(() => {
         getPatients()
     }, [])
 
-    const getPatients = () => {
-
+    const getPatients = (skip = false) => {
         axios.get(`http://localhost:3002/users`)
             .then(user => {
-                setResources([...resources, {
-                    fieldName: 'userId',
-                    title: 'Patient',
-                    instances: user.data.map((p, i) => ({ id: p.id, text: p.firstName }))
-                },
-                {
-                    fieldName: 'ownerId',
-                    title: 'Médecin',
-                    instances: user.data.map((p, i) => ({ id: p.id, text: p.firstName }))
-                }])
+                if (!skip) {
+                    setResources([...resources, {
+                        fieldName: 'userId',
+                        title: 'Patient',
+                        instances: user.data.map((p, i) => ({ id: p.id, text: p.firstName }))
+                    },
+                    {
+                        fieldName: 'ownerId',
+                        title: 'Médecin',
+                        instances: user.data.map((p, i) => ({ id: p.id, text: p.firstName }))
+                    }])
+                }
+
                 axios.get(`http://localhost:3002/consultations`)
                     .then(res => {
                         setData([...res.data.map((d) => ({
@@ -99,7 +102,7 @@ const MyAgenda = () => {
                             roomId: 2,
                             ownerId: d.owner_id,
                             startDate: new Date(d.date),
-                            endDate: new Date(d.date).setHours(new Date(d.date).getHours() + 1)
+                            endDate: new Date(d.end_date)
                         }))])
                     })
             })
@@ -142,8 +145,9 @@ const MyAgenda = () => {
                 allergies: "a",
                 name: "a",
                 diagnosis: "a",
-                status: "a",
+                status: "Pas encore arrivé",
                 date: added.startDate,
+                end_date: added.endDate,
                 user_id: added.userId,
                 owner_id: added.ownerId
                 // measurements: {
@@ -159,7 +163,7 @@ const MyAgenda = () => {
                 // Ajoutez d'autres champs selon vos besoins
             };
             axios.post(`http://localhost:3002/consultations`, newConsultation)
-                .then(() => getPatients())
+                .then(() => getPatients(true))
 
         }
 
@@ -168,14 +172,16 @@ const MyAgenda = () => {
                 changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment));
 
             axios.put(`http://localhost:3002/consultations/${Object.keys(changed)[0]}`, {
-                ...changed[Object.keys(changed)[0]], owner_id: changed[Object.keys(changed)[0]].ownerId, user_id: changed[Object.keys(changed)[0]].userId, date: changed[Object.keys(changed)[0]].startDate
+                ...changed[Object.keys(changed)[0]],
+                end_date: changed[Object.keys(changed)[0]].endDate,
+                owner_id: changed[Object.keys(changed)[0]].ownerId, user_id: changed[Object.keys(changed)[0]].userId, date: changed[Object.keys(changed)[0]].startDate
             })
-                .then(() => getPatients())
+                .then(() => getPatients(true))
         }
 
         if (deleted !== undefined) {
             axios.delete(`http://localhost:3002/consultations/${deleted}`)
-                .then(() => getPatients())
+                .then(() => getPatients(true))
             newData = newData.filter(appointment => appointment.id !== deleted);
         }
 
@@ -195,7 +201,7 @@ const MyAgenda = () => {
                     locale={languageLocalization}
                 >
                     <ViewState
-                        currentDate={currentDate}
+                        defaultCurrentDate={currentDate}
                         defaultCurrentViewName="Month"
                     />
                     <EditingState
@@ -224,6 +230,8 @@ const MyAgenda = () => {
                         mainResourceName="ownerId"
                     />
                     <Toolbar />
+                    <DateNavigator />
+                    <TodayButton />
                     <ViewSwitcher />
                     <IntegratedGrouping />
                     <IntegratedEditing />

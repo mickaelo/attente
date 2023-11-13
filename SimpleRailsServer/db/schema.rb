@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_11_13_120903) do
+ActiveRecord::Schema[7.1].define(version: 2023_11_13_124673) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -30,8 +30,11 @@ ActiveRecord::Schema[7.1].define(version: 2023_11_13_120903) do
     t.bigint "user_id"
     t.jsonb "exams", default: {}
     t.bigint "owner_id"
+    t.bigint "users_id"
+    t.datetime "end_date"
     t.index ["owner_id"], name: "index_consultations_on_owner_id"
     t.index ["user_id"], name: "index_consultations_on_user_id"
+    t.index ["users_id"], name: "index_consultations_on_users_id"
   end
 
   create_table "maladies", force: :cascade do |t|
@@ -77,5 +80,6 @@ ActiveRecord::Schema[7.1].define(version: 2023_11_13_120903) do
 
   add_foreign_key "consultations", "users"
   add_foreign_key "consultations", "users", column: "owner_id"
+  add_foreign_key "consultations", "users", column: "users_id"
   add_foreign_key "medications", "maladies"
 end

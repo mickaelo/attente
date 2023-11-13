@@ -13,17 +13,14 @@ const EditableCell = ({
 
     const [measures, setMeasures] = useState(record?.[dataIndex] || ['', '', '']);
     const [measure1, setMeasure1] = useState(record?.[dataIndex]?.[0] || '');
-    console.log(record?.[dataIndex])
     if (record?.[dataIndex] === undefined) {
         return <td {...restProps}>
             {children}
         </td >
     }
     if (title === "Mesure") {
-        console.log(measures)
 
         const handleMeasureChange = (value, measureIndex) => {
-            console.log(measureIndex)
             setMeasures((prevMeasures) => {
                 const newMeasures = [...prevMeasures];
                 newMeasures[measureIndex] = value;
@@ -145,7 +142,6 @@ const EditableTable = ({ setMeasurements }) => {
         },
         // Ajoutez d'autres lignes selon vos besoins
     ]);
-    console.log(data)
     const [editingKey, setEditingKey] = useState('');
 
     const isEditing = (record) => record.key === editingKey;
@@ -175,6 +171,8 @@ const EditableTable = ({ setMeasurements }) => {
                 setData(newData);
                 setEditingKey('');
             }
+        console.log(newData)
+
             setMeasurements(newData)
         } catch (errInfo) {
             console.log('Validate Failed:', errInfo);

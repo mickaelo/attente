@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import moment from 'moment';
 import { Tabs, Table, Button, Popconfirm, message, Tag } from 'antd';
 import { useNavigate } from "react-router-dom";
 import backgroundImg from './background.jpeg'; // Remplace avec le chemin de ton image de fond
@@ -26,6 +27,17 @@ const generateRandomName = () => {
     return names[randomIndex];
 };
 
+const ontLeMemeJour = (date1, date2) => {
+    console.log(date1)
+    console.log(date2)
+    return (
+        date1.getFullYear() === date2.getFullYear() &&
+        date1.getMonth() === date2.getMonth() &&
+        date1.getDate() === date2.getDate()
+    );
+}
+
+
 const generatePatientList = (count) => {
     const patients = [];
     for (let i = 1; i <= count; i++) {
@@ -42,25 +54,18 @@ const generatePatientList = (count) => {
 const QueueManager = () => {
     const [queue, setQueue] = useState([]);
     const [patients, setPatients] = useState([]);
+    const [tab, setTab] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Ici, tu devrais charger les données de la file d'attente depuis ton backend
-        // par exemple, avec une requête HTTP vers une API REST
-        // Assure-toi d'adapter cela en fonction de ton architecture
-
-        // Exemple de structure d'un élément de file d'attente
-        const sampleQueueData = patients;
-
-        setQueue(sampleQueueData);
         getPatients()
-    }, []); // Utilise une dépendance vide pour n'effectuer l'effet qu'une seule fois à la création du composant
-    const getPatients = () => {
-        axios.get(`http://localhost:3002/users`)
-            .then(res => {
-                setQueue(res.data)
-            })
+    }, [tab]); // Utilise une dépendance vide pour n'effectuer l'effet qu'une seule fois à la création du composant
 
+    const getPatients = () => {
+        axios.get(`http://localhost:3002/consultations`)
+            .then(res => {
+                setQueue(res.data.filter((d) => ontLeMemeJour(new Date(d.date), new Date())))
+            })
     }
 
     const removeFromQueue = (userId) => {
@@ -77,14 +82,31 @@ const QueueManager = () => {
 
     const columns = [
         {
+            title: 'Heure',
+            dataIndex: '',
+            key: 'hour',
+            render: (item) => {
+                console.log(item)
+                return moment(item.date).format("hh:mm")
+            },
+            sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix()
+        },
+        {
             title: 'Prénom',
-            dataIndex: 'firstName',
-            key: 'name',
+            dataIndex: '',
+            key: 'firstName',
+            render: (item) => {
+                console.log(item)
+                return item.user?.firstName
+            },
         },
         {
             title: 'Nom',
-            dataIndex: 'lastName',
-            key: 'name',
+            key: 'lastName',
+            render: (item) => {
+                console.log(item)
+                return item.user?.lastName
+            },
         },
         {
             title: 'Statut',
@@ -96,43 +118,39 @@ const QueueManager = () => {
                 </Tag>
             ),
         },
-        {
-            title: 'Action',
-            key: 'action',
-            render: (text, record) => (
-                <Popconfirm
-                    title="Retirer de la file d'attente?"
-                    onConfirm={() => removeFromQueue(record.userId)}
-                    okText="Oui"
-                    cancelText="Non"
-                >
-                    <Button type="danger">Retirer</Button>
-                </Popconfirm>
-            ),
-        },
+        // {
+        //     title: 'Action',
+        //     key: 'action',
+        //     render: (text, record) => (
+        //         <Popconfirm
+        //             title="Retirer de la file d'attente?"
+        //             onConfirm={() => removeFromQueue(record.userId)}
+        //             okText="Oui"
+        //             cancelText="Non"
+        //         >
+        //             <Button type="danger">Retirer</Button>
+        //         </Popconfirm>
+        //     ),
+        // },
         {
             title: '',
             key: '',
             render: (text, record) => (
-                <Button onClick={() => navigate("/consultation/"+record.id)}>edit</Button>
+                <Button onClick={() => navigate("/consultation/" + record.id)}>Consulter</Button>
             ),
         },
     ];
 
-    console.log(patients)
-
     return (
         <div style={backgroundStyle}>
-            <h1>File d'attente</h1>
-            <Tabs defaultActiveKey="1" tabPosition="left" style={{ height: '100vh' }}>
-                <TabPane tab="File d'attente" key="1">
+            <Tabs onChange={setTab} defaultActiveKey="1" tabPosition="left" style={{ height: '100vh' }}>
+                <TabPane tab="Consultations du jour" key="1">
                     {/* Contenu de la file d'attente */}
                     <Table columns={columns} dataSource={queue} />
                 </TabPane>
-                <TabPane tab="Calendrier" key="2">
-                    {/* Contenu du calendrier */}
+                {/* <TabPane tab="Calendrier" key="2">
                     <AppointmentCalendar />
-                </TabPane>
+                </TabPane> */}
                 <TabPane tab="Agenda" key="3">
                     {/* Contenu du calendrier */}
                     <MyAgenda />
