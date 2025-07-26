@@ -9,7 +9,7 @@ const AddPatientForm = ({ getPatients }) => {
 
   const handleSubmit = (values) => {
     // Passer les données du nouveau patient à la fonction onAddPatient
-    axios.post(`http://localhost:3002/users`, { user: values })
+    axios.post(`http://localhost:8000/users`, { user: values })
       .then(() =>
         getPatients())
     // Réinitialiser le formulaire après l'ajout du patient

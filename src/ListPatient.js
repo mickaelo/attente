@@ -3,7 +3,7 @@ import { Table, Space, Button, Modal, Form, Input, DatePicker, Select } from 'an
 import EditPatientForm from './EditPatientForm'; // Assure-toi d'importer correctement le composant d'édition
 import moment from 'moment';
 import { useNavigate } from "react-router-dom";
-import backgroundImg from './background.jpeg'; // Remplace avec le chemin de ton image de fond
+import backgroundImg from './medical-bg.jpg'; // Remplace avec le chemin de ton image de fond
 import AppointmentCalendar from './Calendar';
 import AddPatientForm from './AddPatient';
 import axios from 'axios';
@@ -89,7 +89,7 @@ const PatientList = () => {
   }, [])
 
   const getPatients = () => {
-    axios.get(`http://localhost:3002/users`)
+    axios.get(`http://localhost:8000/users`)
       .then(res => {
         setPatients(res.data)
         setFilteredPatients(res.data)
@@ -103,7 +103,7 @@ const PatientList = () => {
       })
   }
   const onDeletePatient = (patient) => {
-    axios.delete(`http://localhost:3002/users/${patient.id}`)
+    axios.delete(`http://localhost:8000/users/${patient.id}`)
       .then(res => {
         getPatients()
       })
@@ -242,61 +242,142 @@ const PatientList = () => {
   };
 
   return (
-    <div style={backgroundStyle}>
-      <h2>Liste des Patients</h2>
+    <div style={{
+      ...backgroundStyle,
+      backdropFilter: 'blur(2px)',
+      backgroundColor: 'rgba(255,255,255,0.85)',
+      color: '#222',
+      borderRadius: '16px',
+      boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+      margin: '32px auto',
+      maxWidth: 1400,
+      padding: '32px 24px',
+    }}>
+      <div style={{ marginBottom: '32px' }}>
+        <h1 style={{ 
+          fontSize: '32px', 
+          fontWeight: 'bold', 
+          color: '#1a365d', 
+          marginBottom: '8px',
+          textAlign: 'center'
+        }}>
+          Liste des Patients
+        </h1>
+        <p style={{ 
+          textAlign: 'center', 
+          color: '#666', 
+          fontSize: '16px',
+          marginBottom: '24px'
+        }}>
+          Gérez vos patients et leurs informations médicales
+        </p>
+      </div>
+
       {/* Formulaire de recherche */}
-      <Form
-        form={searchForm}
-        onFinish={handleSearch}
-        layout="inline"
-        style={{ marginBottom: '16px' }}
-      >
-        <Form.Item name="firstName" label="Prénom">
-          <Input />
-        </Form.Item>
+      <div style={{
+        background: '#fff',
+        padding: '24px',
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        marginBottom: '24px'
+      }}>
+        <h3 style={{ 
+          fontSize: '18px', 
+          fontWeight: '600', 
+          color: '#1a365d', 
+          marginBottom: '16px' 
+        }}>
+          Recherche de Patients
+        </h3>
+        <Form
+          form={searchForm}
+          onFinish={handleSearch}
+          layout="inline"
+          style={{ marginBottom: '16px' }}
+        >
+          <Form.Item name="firstName" label="Prénom">
+            <Input placeholder="Entrez le prénom" />
+          </Form.Item>
 
-        <Form.Item name="lastName" label="Nom">
-          <Input />
-        </Form.Item>
+          <Form.Item name="lastName" label="Nom">
+            <Input placeholder="Entrez le nom" />
+          </Form.Item>
 
-        <Form.Item name="birthDate" label="Date de Naissance">
-          <DatePicker style={{ width: '100%' }} />
-        </Form.Item>
+          <Form.Item name="birthDate" label="Date de Naissance">
+            <DatePicker style={{ width: '100%' }} />
+          </Form.Item>
 
-        <Form.Item name="idNumber" label="Matricule">
-          <Input />
-        </Form.Item>
+          <Form.Item name="idNumber" label="Matricule">
+            <Input placeholder="Entrez le matricule" />
+          </Form.Item>
 
-        <Form.Item name="occupation" label="Fonction">
-          <Input />
-        </Form.Item>
+          <Form.Item name="occupation" label="Fonction">
+            <Input placeholder="Entrez la fonction" />
+          </Form.Item>
 
-        <Form.Item name="gender" label="Sexe">
-          <Select>
-            <Option value="male">Homme</Option>
-            <Option value="female">Femme</Option>
-          </Select>
-        </Form.Item>
+          <Form.Item name="gender" label="Sexe">
+            <Select placeholder="Sélectionnez le sexe">
+              <Option value="male">Homme</Option>
+              <Option value="female">Femme</Option>
+            </Select>
+          </Form.Item>
 
-        <Form.Item name="maritalStatus" label="État Civil">
-          <Select>
-            <Option value="single">Célibataire</Option>
-            <Option value="married">Marié(e)</Option>
-            <Option value="divorced">Divorcé(e)</Option>
-            <Option value="widowed">Veuf/Veuve</Option>
-          </Select>
-        </Form.Item>
+          <Form.Item name="maritalStatus" label="État Civil">
+            <Select placeholder="Sélectionnez l'état civil">
+              <Option value="single">Célibataire</Option>
+              <Option value="married">Marié(e)</Option>
+              <Option value="divorced">Divorcé(e)</Option>
+              <Option value="widowed">Veuf/Veuve</Option>
+            </Select>
+          </Form.Item>
 
-        <Form.Item>
-          <Button type="primary" htmlType="submit">
-            Rechercher
-          </Button>
-        </Form.Item>
-        <Form.Item>
-          <Button onClick={() => showAddModal()}>Ajouter</Button>
-        </Form.Item>
-      </Form>
-      <Table dataSource={filteredPatients || patients} columns={columns} />
+          <Form.Item>
+            <Button type="primary" htmlType="submit" style={{ 
+              background: '#1890ff', 
+              borderColor: '#1890ff',
+              borderRadius: '8px',
+              fontWeight: '500'
+            }}>
+              Rechercher
+            </Button>
+          </Form.Item>
+          <Form.Item>
+            <Button 
+              onClick={() => showAddModal()} 
+              style={{ 
+                background: '#52c41a', 
+                borderColor: '#52c41a',
+                color: 'white',
+                borderRadius: '8px',
+                fontWeight: '500'
+              }}
+            >
+              Ajouter Patient
+            </Button>
+          </Form.Item>
+        </Form>
+      </div>
+
+      <div style={{
+        background: '#fff',
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        overflow: 'hidden'
+      }}>
+        <Table 
+          dataSource={filteredPatients || patients} 
+          columns={columns} 
+          rowKey="id"
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) => `${range[0]}-${range[1]} sur ${total} patients`,
+          }}
+          scroll={{ x: 1500 }}
+        />
+      </div>
+
       {/* Composant d'édition des patients */}
       {selectedPatient && (
         <EditPatientForm
@@ -305,7 +386,7 @@ const PatientList = () => {
           onCancel={handleEditCancel}
           onUpdatePatient={(updatedPatient) => {
             // Implémente la logique pour mettre à jour le patient dans la liste
-            axios.put(`http://localhost:3002/users/${updatedPatient.id}`, updatedPatient)
+            axios.put(`http://localhost:8000/users/${updatedPatient.id}`, updatedPatient)
               .then(res => {
                 handleEditCancel();
                 getPatients()
@@ -315,14 +396,16 @@ const PatientList = () => {
         />
       )}
       <Modal
-        title={`Ajout`}
-        visible={isAddModalVisible}
+        title="Ajouter un nouveau patient"
+        open={isAddModalVisible}
         onCancel={handleAddCancel}
         footer={[
           <Button key="cancel" onClick={handleAddCancel}>
             Annuler
           </Button>,
         ]}
+        width={800}
+        centered
       >
         <AddPatientForm getPatients={getPatients} />
       </Modal>

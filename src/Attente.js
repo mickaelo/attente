@@ -3,7 +3,7 @@ import axios from 'axios';
 import moment from 'moment';
 import { Tabs, Table, Button, Popconfirm, message, Tag } from 'antd';
 import { useNavigate } from "react-router-dom";
-import backgroundImg from './background.jpeg'; // Remplace avec le chemin de ton image de fond
+import backgroundImg from './medical-bg.jpg'; // Nouvelle image médicale nette
 import AppointmentCalendar from './Calendar';
 import MyAgenda from './Agenda';
 import OpenAIComponent from './OpenAIComponent';
@@ -13,9 +13,13 @@ const { TabPane } = Tabs;
 const backgroundStyle = {
     backgroundImage: `url(${backgroundImg})`,
     backgroundSize: 'cover',
+    backgroundPosition: 'center',
     minHeight: '100vh',
     padding: '20px',
     color: 'white',
+    // Suppression du flou
+    // backdropFilter: 'blur(2px)',
+    // backgroundColor: 'rgba(255,255,255,0.85)',
 };
 const generateRandomStatus = () => {
     const statuses = ['Accueil', 'Orthoptiste', 'Médecin'];
@@ -66,7 +70,7 @@ const QueueManager = () => {
     }, [tab]); // Utilise une dépendance vide pour n'effectuer l'effet qu'une seule fois à la création du composant
 
     const getPatients = () => {
-        axios.get(`http://localhost:3002/consultations`)
+        axios.get(`http://localhost:8000/consultations`)
             .then(res => {
                 setQueue(res.data.filter((d) => ontLeMemeJour(new Date(d.date), new Date())))
             })
@@ -146,23 +150,49 @@ const QueueManager = () => {
     ];
 
     return (
-        <div style={backgroundStyle}>
-            <Tabs onChange={setTab} defaultActiveKey="1" tabPosition="left" style={{ height: '100vh' }}>
-                
-                <TabPane tab="Consultations du jour" key="1">
-                    {/* Contenu de la file d'attente */}
-                    <OpenAIComponent />
-                    <Table columns={columns} dataSource={queue} />
-                </TabPane>
-                {/* <TabPane tab="Calendrier" key="2">
-                    <AppointmentCalendar />
-                </TabPane> */}
-                <TabPane tab="Agenda" key="3">
-                    {/* Contenu du calendrier */}
-                    <MyAgenda />
-                </TabPane>
-            </Tabs>
-
+        <div style={{
+            ...backgroundStyle,
+            color: '#222',
+            borderRadius: '16px',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+            margin: '32px auto',
+            maxWidth: 1200,
+            padding: '32px 24px',
+        }}>
+            <Tabs
+                onChange={setTab}
+                defaultActiveKey="1"
+                tabPosition="left"
+                style={{ minHeight: '80vh' }}
+                items={[
+                    {
+                        label: <span style={{fontWeight:'bold',fontSize:18,letterSpacing:1}}>Consultations du jour</span>,
+                        key: '1',
+                        children: (
+                            <div>
+                                <OpenAIComponent />
+                                <Table
+                                    columns={columns}
+                                    dataSource={queue}
+                                    rowKey={row => row.id}
+                                    bordered
+                                    style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+                                />
+                            </div>
+                        ),
+                    },
+                    // {
+                    //     label: <span style={{fontWeight:'bold',fontSize:18,letterSpacing:1}}>Calendrier</span>,
+                    //     key: '2',
+                    //     children: <AppointmentCalendar />,
+                    // },
+                    {
+                        label: <span style={{fontWeight:'bold',fontSize:18,letterSpacing:1}}>Agenda</span>,
+                        key: '3',
+                        children: <MyAgenda />,
+                    },
+                ]}
+            />
         </div>
     );
 };

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, Select, Button, message, Typography, Divider, Row, Col, Tabs, AutoComplete } from 'antd';
 import { PageHeader } from '@ant-design/pro-layout';
 
-import backgroundImg from './background.jpeg'; // Remplace avec le chemin de ton image de fond
+import backgroundImg from './medical-bg.jpg'; // Remplace avec le chemin de ton image de fond
 import { useReactToPrint } from 'react-to-print';
 import { saveAs } from 'file-saver';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
@@ -34,7 +34,7 @@ const EditPatientDetailPage = (parms) => {
   const [consultations, setConsultations] = useState([]);
   const getConsultations = () => {
     console.log("get")
-    axios.get(`http://localhost:3002/consultations`)
+    axios.get(`http://localhost:8000/consultations`)
       .then(res => {
         console.log(res)
         const sorted = res.data.sort(function (a, b) {
@@ -85,7 +85,7 @@ const EditPatientDetailPage = (parms) => {
   });
 
   useEffect(() => {
-    axios.get(`http://localhost:3002/consultations/${id}`).then(res => {
+    axios.get(`http://localhost:8000/consultations/${id}`).then(res => {
       setPatient({ ...res.data, ...res.data.user });
     })
 
@@ -112,7 +112,7 @@ const EditPatientDetailPage = (parms) => {
     // }).then(res => {
     //   saveAs(res.data, `courrier.pdf`);
     // })
-    await axios.post(`http://localhost:3002/pdf_generator/generate_courrier_pdf`, {
+          await axios.post(`http://localhost:8000/pdf_generator/generate_courrier_pdf`, {
       ...newConsultation,
       id_consultation: id,
       description: {
@@ -176,7 +176,7 @@ const EditPatientDetailPage = (parms) => {
     };
     console.log(newConsultation)
     setConsultations([...consultations, newConsultation])
-    axios.put(`http://localhost:3002/consultations/${id}`, newConsultation)
+    axios.put(`http://localhost:8000/consultations/${id}`, newConsultation)
       .then(() => getConsultations())
 
     // Vous pouvez ensuite stocker cette nouvelle consultation dans votre base de données ou votre état local
@@ -322,16 +322,65 @@ const EditPatientDetailPage = (parms) => {
   };
   const navigate = useNavigate();
 
+  // Add this helper to compute age if birthdate is available
+  const getAge = (birthDate) => {
+    if (!birthDate) return '';
+    const now = moment();
+    const dob = moment(birthDate);
+    return now.diff(dob, 'years');
+  };
+
+  // Patient info card styles
+  const patientCardStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    background: '#f8f9fa',
+    borderRadius: 8,
+    padding: 24,
+    marginBottom: 24,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+    color: '#222'
+  };
+  const patientPhotoStyle = {
+    width: 120,
+    height: 120,
+    borderRadius: '50%',
+    objectFit: 'cover',
+    marginRight: 32,
+    border: '2px solid #e0e0e0',
+    background: '#fff'
+  };
+  const patientDetailsStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4
+  };
+
   return (
     <div style={backgroundStyle}>
       <div style={formStyle}>
+        {/* Patient Info Card */}
+        <div style={patientCardStyle}>
+          <img
+            src={patient.photoUrl || "/default-patient.png"}
+            alt="Patient"
+            style={patientPhotoStyle}
+          />
+          <div style={patientDetailsStyle}>
+            <h2 style={{margin: 0}}>{patient.firstName} {patient.lastName}</h2>
+            <div><strong>ID:</strong> {patient.id}</div>
+            <div><strong>Âge:</strong> {getAge(patient.birthDate) || '-'}</div>
+            <div><strong>Sexe:</strong> {patient.gender || '-'}</div>
+            <div><strong>Adresse:</strong> {patient.address || '-'}</div>
+          </div>
+        </div>
         <PageHeader
           className="site-page-header"
           onBack={() => navigate("/")}
           title={`Suivi de ${patient.firstName} ${patient.lastName}`}
         />
 
-        <PreviousConsultationsSummary consultations={consultations} previousConsultations={consultations} />
+        {/* <PreviousConsultationsSummary consultations={consultations} previousConsultations={consultations} /> */}
         <Tabs defaultActiveKey="1">
           <TabPane tab="Informations générales" key="1">
             <Row>

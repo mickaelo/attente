@@ -92,7 +92,7 @@ const AppointmentCalendar = () => {
 
             <Modal
                 title={`Prendre rendez-vous le ${selectedDate ? moment(selectedDate).format('LL') : ''}`}
-                visible={visible}
+                open={visible}
                 onCancel={handleCancel}
                 onOk={handleOk}
             >
