@@ -31,9 +31,7 @@ export default function Form() {
 
         try {
             const runResponse = await axios.post(`https://api.openai.com/v1/chat/completions`, apiRequestBody );
-            console.log(runResponse)
             const content = runResponse.data.choices[0]?.message?.content;
-            console.log(content)
             if (content) {
                 const chatGPTResponse = {
                     message: content,
