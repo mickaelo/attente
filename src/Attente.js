@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import backgroundImg from './background.jpeg'; // Remplace avec le chemin de ton image de fond
 import AppointmentCalendar from './Calendar';
 import MyAgenda from './Agenda';
+import OpenAIComponent from './OpenAIComponent';
+
 const { TabPane } = Tabs;
 
 const backgroundStyle = {
@@ -52,6 +54,8 @@ const generatePatientList = (count) => {
 };
 
 const QueueManager = () => {
+    
+    
     const [queue, setQueue] = useState([]);
     const [patients, setPatients] = useState([]);
     const [tab, setTab] = useState(null);
@@ -89,7 +93,7 @@ const QueueManager = () => {
                 console.log(item)
                 return moment(item.date).format("hh:mm")
             },
-            sorter: (a, b) => moment(a.date).unix() - moment(b.date).unix()
+            sort: (a, b) => moment(b.date).unix() - moment(a.date).unix(),
         },
         {
             title: 'Prénom',
@@ -144,8 +148,10 @@ const QueueManager = () => {
     return (
         <div style={backgroundStyle}>
             <Tabs onChange={setTab} defaultActiveKey="1" tabPosition="left" style={{ height: '100vh' }}>
+                
                 <TabPane tab="Consultations du jour" key="1">
                     {/* Contenu de la file d'attente */}
+                    <OpenAIComponent />
                     <Table columns={columns} dataSource={queue} />
                 </TabPane>
                 {/* <TabPane tab="Calendrier" key="2">

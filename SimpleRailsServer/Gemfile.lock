@@ -155,8 +155,12 @@ GEM
     nokogiri (1.15.4-x86_64-linux)
       racc (~> 1.4)
     orm_adapter (0.5.0)
+    pdf-core (0.9.0)
     pg (1.5.4)
     pg (1.5.4-x64-mingw-ucrt)
+    prawn (2.4.0)
+      pdf-core (~> 0.9.0)
+      ttfunk (~> 1.7)
     psych (5.1.1.1)
       stringio
     public_suffix (5.0.3)
@@ -232,6 +236,7 @@ GEM
     stringio (3.0.9)
     thor (1.3.0)
     timeout (0.4.1)
+    ttfunk (1.7.0)
     turbo-rails (1.5.0)
       actionpack (>= 6.0.0)
       activejob (>= 6.0.0)
@@ -269,6 +274,7 @@ DEPENDENCIES
   importmap-rails
   jbuilder
   pg (~> 1.5, >= 1.5.4)
+  prawn
   puma (>= 5.0)
   rack-cors
   rails (~> 7.1.2)

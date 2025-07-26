@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Space, Button, Modal, Form, Input, DatePicker, Select } from 'antd';
 import EditPatientForm from './EditPatientForm'; // Assure-toi d'importer correctement le composant d'édition
 import moment from 'moment';
+import { useNavigate } from "react-router-dom";
 import backgroundImg from './background.jpeg'; // Remplace avec le chemin de ton image de fond
 import AppointmentCalendar from './Calendar';
 import AddPatientForm from './AddPatient';
@@ -22,8 +23,7 @@ const generateRandomDate = () => {
   const start = new Date(1950, 0, 1);
   const end = new Date(2005, 11, 31);
   const randomDate = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-  return "";
-  // return moment(randomDate).format('YYYY-MM-DD');
+  return moment(randomDate).format('YYYY-MM-DD');
 };
 const generateRandomPhoneNumber = () => {
   const digits = Math.floor(100000000 + Math.random() * 900000000);
@@ -79,9 +79,11 @@ const generateRandomPatients = () => {
 
 
 const PatientList = () => {
+  const [tab, setTab] = useState(null);
+  const navigate = useNavigate();
   const [searchForm] = Form.useForm();
-  const [filteredPatients, setFilteredPatients] = useState(null);
-  const patients = generateRandomPatients();
+  const [filteredPatients, setFilteredPatients] = useState([]);
+  const [patients, setPatients] = useState([]);
   useEffect(() => {
     getPatients()
   }, [])
@@ -89,13 +91,24 @@ const PatientList = () => {
   const getPatients = () => {
     axios.get(`http://localhost:3002/users`)
       .then(res => {
+        setPatients(res.data)
         setFilteredPatients(res.data)
+      })
+      .catch(err => {
+        console.error('Erreur lors de la récupération des patients:', err);
+        // Fallback vers les données générées si l'API n'est pas disponible
+        const generatedPatients = generateRandomPatients();
+        setPatients(generatedPatients);
+        setFilteredPatients(generatedPatients);
       })
   }
   const onDeletePatient = (patient) => {
     axios.delete(`http://localhost:3002/users/${patient.id}`)
       .then(res => {
         getPatients()
+      })
+      .catch(err => {
+        console.error('Erreur lors de la suppression du patient:', err);
       })
   }
   const columns = [
@@ -169,6 +182,7 @@ const PatientList = () => {
       key: 'actions',
       render: (text, record) => (
         <Space size="middle">
+          <Button onClick={() => navigate(`/patients/${record.id}`)}>Consulter dossier</Button>
           <Button onClick={() => showEditModal(record)}>Éditer</Button>
           <Button onClick={() => showDeleteConfirm(record)}>Supprimer</Button>
         </Space>
@@ -317,3 +331,69 @@ const PatientList = () => {
 };
 
 export default PatientList;
+
+// const users = []
+// for (let pas = 0; pas < 10; pas++) {
+//   const formData = `scope=all&filter=%26member_type%3Dabo-plus&nonce=ef38acd365&action=members_filter&object=members&target=%23buddypress+%5Bdata-bp-list%5D&&search_terms=&page=${pas}&extras=&caller=&template=&method=reset`;
+
+//   fetch('https://hommenouveau.fr/wp-admin/admin-ajax.php', {
+//     method: 'POST',
+//     headers: {
+//       'Accept': '*/*',
+//       'Accept-Encoding': 'gzip, deflate, br',
+//       'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+//       'Connection': 'keep-alive',
+//       'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+//       'Content-Length': formData.length.toString(),
+//       'Cookie': 'your_cookie_data_here',
+//       'DNT': '1',
+//       'Host': 'hommenouveau.fr',
+//       'Origin': 'https://hommenouveau.fr',
+//       'Referer': 'https://hommenouveau.fr/membres/',
+//       'Sec-Fetch-Dest': 'empty',
+//       'Sec-Fetch-Mode': 'cors',
+//       'Sec-Fetch-Site': 'same-origin',
+//       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+//       'X-Requested-With': 'XMLHttpRequest',
+//       'sec-ch-ua': '"Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24"',
+//       'sec-ch-ua-mobile': '?0',
+//       'sec-ch-ua-platform': '"Windows"'
+//     },
+//     body: formData,
+//   })
+//     .then(response => response.json())
+//     .then(data => {
+//         // Assuming 'htmlContent' contains the HTML string you provided
+//   var htmlContent = data.data.contents;
+
+//   // Create a temporary div element to hold the HTML content
+//   var tempDiv = document.createElement('div');
+//   tempDiv.innerHTML = htmlContent;
+
+//   // Select the elements you want to extract using querySelector or other DOM methods
+//   var memberElements = tempDiv.querySelectorAll('.item-entry');
+
+//   // Iterate through each member element and extract relevant information
+//   var membersData = [];
+
+//   memberElements.forEach(function(memberElement) {
+//       var name = memberElement.querySelector('.list-title.member-name a').textContent.trim();
+//       var lastActivity = memberElement.querySelector('.item-meta.last-activity').textContent.trim();
+
+//       // You can add more properties based on the data you need
+
+//       var memberData = {
+//           name: name,
+//           lastActivity: lastActivity
+//       };
+
+//       membersData.push(memberData);
+//   });
+
+//   // Log the extracted data
+//   // console.log(membersData);
+//   users.push(membersData)
+//     })
+//     .catch(error => console.error(error));
+//   }
+//   console.log(users)

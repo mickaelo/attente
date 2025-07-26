@@ -2,7 +2,8 @@ const fs = require("fs");
 const PDFDocument = require("pdfkit");
 
 async function generateCourrierPdf(patient, path) {
-    const courrier = `Cher confrère,\n\nNous avons vu ce jour M. ${patient.name}\nIl/Elle a pour principaux antécédents : ${patient.antecedents}\n\nCe jour, l'acuité visuelle est de ${patient.measurements.refraction.od1} OD et ${patient.measurements.refraction.og1} OG.\nPIO : ${patient.measurements.pio.od} OD et ${patient.measurements.pio.og} OG.\nExamen lampe à fente :\n- OD : ${patient.exams.laf.od}\n- OG : ${patient.exams.laf.og}\nFond d'oeil :\n- OD : ${patient.exams.fo.od}\n- OG : ${patient.exams.fo.og}\n\n\n\nBien confraternellement,\n\nDr Léa Trouvé`
+    const courrier = `Cher confrère,\n\nNous avons vu ce jour M. ${patient.name}\nIl/Elle a pour principaux antécédents : ${patient.antecedents}\n\nCe jour, l'acuité visuelle est de
+    ${patient.measurements?.[0]?.['OD_measure']?.[0]} ${patient.measurements?.[0]?.['OD_measure']?.[1]} ${patient.measurements?.[0]?.['OD_measure']?.[2]} OD et     ${patient.measurements?.[0]?.['OG_measure']?.[0]} ${patient.measurements?.[0]?.['OG_measure']?.[1]} ${patient.measurements?.[0]?.['OG_measure']?.[2]} OG.\nPIO : ${patient.measurements?.[3]?.['OD_measure']?.[0]} ${patient.measurements?.[3]?.['OD_measure']?.[1]} ${patient.measurements?.[3]?.['OD_measure']?.[2]} OD et ${patient.measurements?.[3]?.['OG_measure']?.[0]} ${patient.measurements?.[1]?.['OG_measure']?.[1]} ${patient.measurements?.[1]?.['OG_measure']?.[2]} OG.\nExamen lampe à fente :\n- OD : ${patient.exams.laf.od}\n- OG : ${patient.exams.laf.og}\nFond d'oeil :\n- OD : ${patient.exams.fo.od}\n- OG : ${patient.exams.fo.og}\n\n\n\nBien confraternellement,\n\nDr Léa Trouvé`
     const invoice = {
         "client": {
             "name": "toto",

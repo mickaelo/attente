@@ -53,10 +53,6 @@ const AddPatientForm = ({ getPatients }) => {
           <Input.TextArea />
         </Form.Item>
 
-        <Form.Item label="Prénom" name="firstName" rules={[{ required: true, message: 'Veuillez saisir le prénom du patient' }]}>
-          <Input />
-        </Form.Item>
-
         <Form.Item label="Sexe" name="gender" rules={[{ required: true, message: 'Veuillez sélectionner le sexe du patient' }]}>
           <Select>
             <Option value="male">Homme</Option>

@@ -102,8 +102,19 @@ const EditPatientDetailPage = (parms) => {
       ...patient,
       date: moment(),
     };
-    await axios.post(`http://localhost:3001/generate-courrier`, {
+    // await axios.post(`http://localhost:3001/generate-courrier`, {
+    //   ...newConsultation,
+    //   description: {
+    //     courrier: e
+    //   }
+    // }, {
+    //   responseType: 'blob'
+    // }).then(res => {
+    //   saveAs(res.data, `courrier.pdf`);
+    // })
+    await axios.post(`http://localhost:3002/pdf_generator/generate_courrier_pdf`, {
       ...newConsultation,
+      id_consultation: id,
       description: {
         courrier: e
       }
@@ -118,6 +129,7 @@ const EditPatientDetailPage = (parms) => {
     const newConsultation = {
       ...examsValues,
       ...patient,
+      id_consultation: id,
       date: moment(),
     };
     await axios.post(`http://localhost:3001/generate-prescription`, {
@@ -370,14 +382,14 @@ const EditPatientDetailPage = (parms) => {
                   <Form.Item label="">
                     <TextArea filterOption={filterOptions}
                       onChange={(e) => handleMeasurementChange('exams', 'motif', e.target.value)}
-                      value={patient.exams.motif}
+                      value={patient?.exams?.motif}
                     />
                   </Form.Item>
                   <Divider orientation="left">Conclusion</Divider>
                   <Form.Item label="">
                     <TextArea filterOption={filterOptions}
                       onChange={(e) => handleMeasurementChange('exams', 'conclusion', e.target.value)}
-                      value={patient.exams.conclusion}
+                      value={patient?.exams?.conclusion}
                     />
                   </Form.Item>
                 </Col>
@@ -387,14 +399,14 @@ const EditPatientDetailPage = (parms) => {
                     <AutoComplete filterOption={filterOptions}
                       options={autoCompleteOptions.map((option) => ({ value: option }))}
                       onChange={(value) => handleAutoCompleteChange('exams', 'laf', 'od', value)}
-                      value={patient.exams.laf.od}
+                      value={patient?.exams?.laf?.od}
                     />
                   </Form.Item>
                   <Form.Item label="LAF OG">
                     <AutoComplete filterOption={filterOptions}
                       options={autoCompleteOptions.map((option) => ({ value: option }))}
                       onChange={(value) => handleAutoCompleteChange('exams', 'laf', 'og', value)}
-                      value={patient.exams.laf.og}
+                      value={patient?.exams?.laf?.og}
                     />
                   </Form.Item>
                 </Col>
@@ -404,14 +416,14 @@ const EditPatientDetailPage = (parms) => {
                     <AutoComplete filterOption={filterOptions}
                       options={autoCompleteOptions2.map((option) => ({ value: option }))}
                       onChange={(value) => handleAutoCompleteChange('exams', 'fo', 'od', value)}
-                      value={patient.exams.fo.od}
+                      value={patient?.exams?.fo?.od}
                     />
                   </Form.Item>
                   <Form.Item label="FO OG">
                     <AutoComplete filterOption={filterOptions}
                       options={autoCompleteOptions2.map((option) => ({ value: option }))}
                       onChange={(value) => handleAutoCompleteChange('exams', 'fo', 'og', value)}
-                      value={patient.exams.fo.og}
+                      value={patient?.exams?.fo?.og}
                     />
                   </Form.Item>
                 </Col>
@@ -420,13 +432,13 @@ const EditPatientDetailPage = (parms) => {
                   <Form.Item label="Externe OD">
                     <AutoComplete filterOption={filterOptions}
                       onChange={(value) => handleAutoCompleteChange('exams', 'external', 'od', value)}
-                      value={patient.exams.external.od}
+                      value={patient?.exams?.external?.od}
                     />
                   </Form.Item>
                   <Form.Item label="Externe OG">
                     <AutoComplete filterOption={filterOptions}
                       onChange={(value) => handleAutoCompleteChange('exams', 'external', 'og', value)}
-                      value={patient.exams.external.og}
+                      value={patient?.exams?.external?.og}
                     />
                   </Form.Item>
 

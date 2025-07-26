@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Modal, Form, Input, Select, Button, TimePicker } from 'antd';
+import { Calendar as AntCalendar, Modal, Form, Input, Select, Button, TimePicker } from 'antd';
 import moment from 'moment';
 import dayjs from 'dayjs';
 import 'dayjs/locale/fr'; // Importe la locale française si nécessaire
@@ -88,7 +88,7 @@ const AppointmentCalendar = () => {
 
     return (
         <div>
-            <Calendar mode='month' cellRender={dateCellRender} onSelect={(value) => handleDateCellClick(value)} />
+            <AntCalendar mode='month' cellRender={dateCellRender} onSelect={(value) => handleDateCellClick(value)} />
 
             <Modal
                 title={`Prendre rendez-vous le ${selectedDate ? moment(selectedDate).format('LL') : ''}`}
