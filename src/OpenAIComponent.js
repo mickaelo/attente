@@ -31,10 +31,7 @@ export default function Form() {
 
         try {
             const runResponse = await axios.post(`https://api.openai.com/v1/chat/completions`, apiRequestBody, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer sk-proj-dn8MIugvLnzsBxjKlXPeT3BlbkFJ5ROKZbfXbrU4Gfqao8Fo`,
-                }
+               
             }
             );
             console.log(runResponse)
