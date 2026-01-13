@@ -20,7 +20,7 @@ const EditPatientForm = ({ visible, patient, onCancel, onUpdatePatient }) => {
   return (
     <Modal
       title={`Éditer le patient ${patient.firstName} ${patient.lastName}`}
-      visible={visible}
+      open={visible}
       onCancel={onCancel}
       footer={[
         <Button key="cancel" onClick={onCancel}>

@@ -9,7 +9,7 @@ const AddPatientForm = ({ getPatients }) => {
 
   const handleSubmit = (values) => {
     // Passer les données du nouveau patient à la fonction onAddPatient
-    axios.post(`http://localhost:3002/users`, { user: values })
+    axios.post(`http://localhost:8000/users`, { user: values })
       .then(() =>
         getPatients())
     // Réinitialiser le formulaire après l'ajout du patient
@@ -51,10 +51,6 @@ const AddPatientForm = ({ getPatients }) => {
 
         <Form.Item label="Adresse" name="address" rules={[{ required: true, message: 'Veuillez saisir l\'adresse du patient' }]}>
           <Input.TextArea />
-        </Form.Item>
-
-        <Form.Item label="Prénom" name="firstName" rules={[{ required: true, message: 'Veuillez saisir le prénom du patient' }]}>
-          <Input />
         </Form.Item>
 
         <Form.Item label="Sexe" name="gender" rules={[{ required: true, message: 'Veuillez sélectionner le sexe du patient' }]}>

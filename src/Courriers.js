@@ -1,7 +1,7 @@
 // EditPatientDetailPage.js
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Select, Button, message, Typography, Divider, Row, Col, Tabs, AutoComplete, Modal } from 'antd';
-import backgroundImg from './background.jpeg'; // Remplace avec le chemin de ton image de fond
+import backgroundImg from './medical-bg.jpg'; // Remplace avec le chemin de ton image de fond
 import { useReactToPrint } from 'react-to-print';
 import { saveAs } from 'file-saver';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
@@ -64,7 +64,7 @@ const Courriers = ({ setCourriers, generateCourrier }) => {
             </Form>
             <Modal
                 title="Ajouter une courrier"
-                visible={courrierModalVisible}
+                open={courrierModalVisible}
                 onOk={handleCourrierModalOk}
                 onCancel={handleCourrierModalCancel}
             >

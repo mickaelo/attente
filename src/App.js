@@ -8,6 +8,7 @@ import PatientList from './ListPatient';
 import Topbar from './TopBar';
 import MedicationsPage from './MedicationsPage';
 import MyAgenda from './Agenda';
+import AccountingPage from './AccountingPage';
 import 'moment/locale/fr'  // without this line it didn't work
 moment.locale('fr')
 
@@ -19,8 +20,9 @@ function App() {
         <Routes>
           <Route path="/agenda" element={<MyAgenda />} />
           <Route path="/medications" element={<MedicationsPage />} />
+          <Route path="/accounting" element={<AccountingPage />} />
           <Route path="/" element={<QueueManager />} />
-          <Route path="/consultation/:id" element={<Patient />} />
+          <Route path="/patients/:id" element={<Patient />} />
           <Route path="/liste-patients" element={<PatientList />} />
         </Routes>
       </div>

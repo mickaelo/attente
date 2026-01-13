@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   get 'medications/index'
   get 'welcome/index'
+  post 'pdf_generator/generate_courrier_pdf'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
   resources :consultations, only: [:index, :show, :new, :create, :destroy, :update]
   resources :medications, only: [:index, :show, :new, :create, :destroy, :edit, :update]

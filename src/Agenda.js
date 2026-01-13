@@ -78,7 +78,7 @@ const MyAgenda = () => {
     }, [])
 
     const getPatients = (skip = false) => {
-        axios.get(`http://localhost:3002/users`)
+        axios.get(`http://localhost:8000/users`)
             .then(user => {
                 if (!skip) {
                     setResources([...resources, {
@@ -93,7 +93,7 @@ const MyAgenda = () => {
                     }])
                 }
 
-                axios.get(`http://localhost:3002/consultations`)
+                axios.get(`http://localhost:8000/consultations`)
                     .then(res => {
                         setData([...res.data.map((d) => ({
                             id: d.id,
@@ -149,20 +149,13 @@ const MyAgenda = () => {
                 date: added.startDate,
                 end_date: added.endDate,
                 user_id: added.userId,
-                owner_id: added.ownerId
-                // measurements: {
-                //   refraction: measurementsValues.refraction,
-                //   acuitySC: measurementsValues.acuitySC,
-                //   acuityAC: measurementsValues.acuityAC,
-                //   pio: measurementsValues.pio,
-                // },
-                // exams: {
-                //   laf: examsValues.laf,
-                //   external: examsValues.external,
-                // },
-                // Ajoutez d'autres champs selon vos besoins
+                owner_id: added.ownerId,
+                measurements: null,
+                description: null,
+                rating: "",
+                exams: null
             };
-            axios.post(`http://localhost:3002/consultations`, newConsultation)
+            axios.post(`http://localhost:8000/consultations`, newConsultation)
                 .then(() => getPatients(true))
 
         }
@@ -171,7 +164,7 @@ const MyAgenda = () => {
             newData = newData.map(appointment => (
                 changed[appointment.id] ? { ...appointment, ...changed[appointment.id] } : appointment));
 
-            axios.put(`http://localhost:3002/consultations/${Object.keys(changed)[0]}`, {
+            axios.put(`http://localhost:8000/consultations/${Object.keys(changed)[0]}`, {
                 ...changed[Object.keys(changed)[0]],
                 end_date: changed[Object.keys(changed)[0]].endDate,
                 owner_id: changed[Object.keys(changed)[0]].ownerId, user_id: changed[Object.keys(changed)[0]].userId, date: changed[Object.keys(changed)[0]].startDate
@@ -180,7 +173,7 @@ const MyAgenda = () => {
         }
 
         if (deleted !== undefined) {
-            axios.delete(`http://localhost:3002/consultations/${deleted}`)
+            axios.delete(`http://localhost:8000/consultations/${deleted}`)
                 .then(() => getPatients(true))
             newData = newData.filter(appointment => appointment.id !== deleted);
         }

@@ -1,7 +1,7 @@
 // EditPatientDetailPage.js
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Select, Button, message, Typography, Divider, Row, Col, Tabs, AutoComplete, Modal } from 'antd';
-import backgroundImg from './background.jpeg'; // Remplace avec le chemin de ton image de fond
+import backgroundImg from './medical-bg.jpg'; // Remplace avec le chemin de ton image de fond
 import { useReactToPrint } from 'react-to-print';
 import { saveAs } from 'file-saver';
 import { Document, Packer, Paragraph, TextRun } from 'docx';
@@ -99,7 +99,7 @@ const Ordonnances = ({ setOrdonnances, generatePrescription }) => {
     };
 
     useEffect(() => {
-        axios.get(`http://localhost:3002/medications`)
+        axios.get(`http://localhost:8000/medications`)
             .then(res => {
                 setMedications(res.data)
             })
@@ -136,7 +136,7 @@ const Ordonnances = ({ setOrdonnances, generatePrescription }) => {
                 </Button>
                 <ul>
                     {prescriptions.map((prescription, index) => (
-                        <div>
+                        <div key={prescription.id || index}>
                             <DownloadingTwoTone style={{ cursor: 'pointer' }} color='info' onClick={async () => await generatePrescription(prescription.medication)} />
                             <strong>Ordonnance:</strong> {prescription.medication}
 
@@ -146,7 +146,7 @@ const Ordonnances = ({ setOrdonnances, generatePrescription }) => {
             </Form>
             <Modal
                 title="Ajouter une ordonnance"
-                visible={prescriptionModalVisible}
+                open={prescriptionModalVisible}
                 onOk={handlePrescriptionModalOk}
                 onCancel={handlePrescriptionModalCancel}
             >

@@ -1,0 +1,17 @@
+.patient-info-card {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.patient-photo {
+  margin-right: 32px;
+}
+.patient-details h2 {
+  margin: 0 0 8px 0;
+}
+.patient-details p {
+  margin: 4px 0;
+}
